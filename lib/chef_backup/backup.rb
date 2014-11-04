@@ -1,0 +1,6 @@
+require 'chef_backup/backup/base'
+require 'chef_backup/backup/tar'
+require 'chef_backup/backup/lvm'
+require 'chef_backup/backup/ebs'
+require 'chef_backup/backup/object'
+require 'chef_backup/backup/custom'
