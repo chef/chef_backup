@@ -1,0 +1,581 @@
+{
+  "private_chef": {
+    "api_version": "11.1.0",
+    "flavor": "ec",
+    "notification_email": "pc-default@opscode.com",
+    "from_email": "\"Opscode\" <donotreply@opscode.com>",
+    "role": "backend",
+    "user": {
+      "username": "opscode",
+      "shell": "/bin/sh",
+      "home": "/opt/opscode/embedded"
+    },
+    "couchdb": {
+      "enable": true,
+      "ha": true,
+      "dir": "/var/opt/opscode/couchdb",
+      "data_dir": "/var/opt/opscode/drbd/data/couchdb",
+      "log_directory": "/var/log/opscode/couchdb",
+      "log_rotation": {
+        "file_maxbytes": 104857600,
+        "num_to_keep": 10
+      },
+      "port": 5984,
+      "bind_address": "0.0.0.0",
+      "vip": "127.0.0.1",
+      "max_document_size": "4294967296",
+      "max_attachment_chunk_size": "4294967296",
+      "os_process_timeout": "300000",
+      "max_dbs_open": 104857600,
+      "delayed_commits": "true",
+      "batch_save_size": 1000,
+      "batch_save_interval": 1000,
+      "log_level": "error",
+      "reduce_limit": "false"
+    },
+    "rabbitmq": {
+      "enable": true,
+      "ha": true,
+      "dir": "/var/opt/opscode/rabbitmq",
+      "data_dir": "/var/opt/opscode/drbd/data/rabbitmq",
+      "log_directory": "/var/log/opscode/rabbitmq",
+      "log_rotation": {
+        "file_maxbytes": 104857600,
+        "num_to_keep": 10
+      },
+      "vhost": "/chef",
+      "user": "chef",
+      "password": "76b619fe244a0ce789599672e9256f4ab907b5ed36cf4e8c621fbf65dfc69ee30313b5bd70d181ed71563da90ae3f6d67bff",
+      "reindexer_vhost": "/reindexer",
+      "jobs_vhost": "/jobs",
+      "jobs_user": "jobs",
+      "jobs_password": "5fd81f6f26ce5855238cbd82bc2cbe340981e6aaf1daaa3ecd305dd7aa41281031b1e1ad50bd61fe559120333005c1fb9495",
+      "actions_user": "actions",
+      "actions_password": "c55f6e21d62e9862825d23d795a55d1ca89378982d81053cdc90bf4a1c5a627844993f150ad8087bc55377cb72dc90c0fc36",
+      "actions_vhost": "/analytics",
+      "actions_exchange": "actions",
+      "node_ip_address": "0.0.0.0",
+      "node_port": "5672",
+      "nodename": "rabbit@localhost",
+      "vip": "127.0.0.1",
+      "consumer_id": "hotsauce"
+    },
+    "jetty": {
+      "enable": false,
+      "ha": false,
+      "log_directory": "/var/opt/opscode/opscode-solr/jetty/logs"
+    },
+    "opscode-solr": {
+      "enable": true,
+      "ha": true,
+      "dir": "/var/opt/opscode/opscode-solr",
+      "data_dir": "/var/opt/opscode/drbd/data/opscode-solr",
+      "log_directory": "/var/log/opscode/opscode-solr",
+      "log_rotation": {
+        "file_maxbytes": 104857600,
+        "num_to_keep": 10
+      },
+      "heap_size": 626,
+      "new_size": 39,
+      "java_opts": " -XX:NewSize=39M -XX:+UseConcMarkSweepGC -XX:+UseParNewGC",
+      "url": "http://localhost:8983",
+      "ip_address": "0.0.0.0",
+      "vip": "127.0.0.1",
+      "port": 8983,
+      "ram_buffer_size": 200,
+      "merge_factor": 25,
+      "max_merge_docs": 2147483647,
+      "max_field_length": 100000,
+      "max_commit_docs": 1000,
+      "commit_interval": 60000,
+      "poll_seconds": 20,
+      "command": "java -Xmx626M -Xms626M -XX:NewSize=39M -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -Xloggc:/var/log/opscode/opscode-solr/gclog.log -verbose:gc -XX:+PrintHeapAtGC -XX:+PrintGCTimeStamps -XX:+PrintGCDetails -XX:+PrintGCApplicationStoppedTime -XX:+PrintGCApplicationConcurrentTime -XX:+PrintTenuringDistribution -Dsolr.data.dir=/var/opt/opscode/drbd/data/opscode-solr -Dsolr.solr.home=/var/opt/opscode/opscode-solr/home -server -jar '/var/opt/opscode/opscode-solr/jetty/start.jar'"
+    },
+    "opscode-expander": {
+      "enable": true,
+      "ha": true,
+      "dir": "/var/opt/opscode/opscode-expander",
+      "log_directory": "/var/log/opscode/opscode-expander",
+      "log_rotation": {
+        "file_maxbytes": 104857600,
+        "num_to_keep": 10
+      },
+      "reindexer_log_directory": "/var/log/opscode/opscode-expander-reindexer",
+      "consumer_id": "default",
+      "nodes": 2
+    },
+    "opscode-erchef": {
+      "enable": true,
+      "ha": true,
+      "dir": "/var/opt/opscode/opscode-erchef",
+      "log_directory": "/var/log/opscode/opscode-erchef",
+      "log_rotation": {
+        "file_maxbytes": 104857600,
+        "num_to_keep": 10
+      },
+      "vip": "127.0.0.1",
+      "listen": "127.0.0.1",
+      "port": 8000,
+      "auth_skew": "900",
+      "bulk_fetch_batch_size": "5",
+      "max_cache_size": "10000",
+      "cache_ttl": "3600",
+      "db_pool_size": "20",
+      "udp_socket_pool_size": "20",
+      "couchdb_max_conn": "100",
+      "ibrowse_max_sessions": 256,
+      "ibrowse_max_pipeline_size": 1,
+      "base_resource_url": "host_header",
+      "s3_bucket": "bookshelf",
+      "s3_url_ttl": 900,
+      "s3_parallel_ops_timeout": 5000,
+      "s3_parallel_ops_fanout": 20,
+      "authz_timeout": 1000,
+      "authz_fanout": 20,
+      "root_metric_key": "chefAPI",
+      "depsolver_worker_count": 5,
+      "depsolver_timeout": 5000,
+      "max_request_size": 1000000
+    },
+    "opscode-chef": {
+      "checksum_path": "/var/opt/opscode/drbd/data/opscode-chef/checksum"
+    },
+    "opscode-webui": {
+      "enable": false,
+      "ha": true,
+      "dir": "/var/opt/opscode/opscode-webui",
+      "log_directory": "/var/log/opscode/opscode-webui",
+      "log_rotation": {
+        "file_maxbytes": 104857600,
+        "num_to_keep": 10
+      },
+      "environment": "privatechef",
+      "url": "http://127.0.0.1:9462",
+      "listen": "127.0.0.1:9462",
+      "vip": "127.0.0.1",
+      "port": 9462,
+      "backlog": 1024,
+      "tcp_nodelay": true,
+      "worker_timeout": 3600,
+      "validation_client_name": "chef",
+      "umask": "0022",
+      "worker_processes": 2,
+      "session_key": "_sandbox_session",
+      "cookie_domain": "all",
+      "cookie_secret": "138af2876602f3ee507de496e86fd04d97365949aa6dc986b349c95782246f79cb9d1ed5b3305710cfe79cfd6c3d36328f66"
+    },
+    "oc-chef-pedant": {
+      "dir": "/var/opt/opscode/oc-chef-pedant",
+      "log_directory": "/var/log/opscode/oc-chef-pedant",
+      "log_http_requests": true,
+      "log_rotation": {
+        "file_maxbytes": 104857600,
+        "num_to_keep": 10
+      },
+      "debug_org_creation": false
+    },
+    "redis_lb": {
+      "enable": true,
+      "ha": true,
+      "dir": "/var/opt/opscode/redis_lb",
+      "data_dir": "/var/opt/opscode/drbd/data/redis_lb",
+      "log_directory": "/var/log/opscode/redis_lb",
+      "log_rotation": {
+        "file_maxbytes": 1000000,
+        "num_to_keep": 10
+      },
+      "port": "16379",
+      "bind": "127.0.0.1",
+      "vip": "127.0.0.1",
+      "keepalive": "60",
+      "timeout": "300",
+      "loglevel": "notice",
+      "databases": "16",
+      "appendonly": "no",
+      "appendfsync": "always",
+      "activerehashing": "no",
+      "aof_rewrite_percent": "50",
+      "aof_rewrite_min_size": "16mb",
+      "maxmemory": "8m",
+      "maxmemory_policy": "noeviction",
+      "save_frequency": {
+        "900": "1",
+        "300": "10",
+        "60": "1000"
+      },
+      "listen": "0.0.0.0"
+    },
+    "lb": {
+      "enable": true,
+      "vip": "127.0.0.1",
+      "api_fqdn": "api.opscode.kryptonite",
+      "web_ui_fqdn": "api.opscode.kryptonite",
+      "cache_cookbook_files": false,
+      "debug": false,
+      "upstream": {
+        "opscode-erchef": [
+          "127.0.0.1"
+        ],
+        "opscode-account": [
+          "127.0.0.1"
+        ],
+        "opscode-webui": [
+          "127.0.0.1"
+        ],
+        "oc_bifrost": [
+          "127.0.0.1"
+        ],
+        "opscode-solr": [
+          "127.0.0.1"
+        ],
+        "bookshelf": [
+          "127.0.0.1"
+        ]
+      },
+      "redis_connection_timeout": 1000,
+      "redis_keepalive_timeout": 2000,
+      "redis_connection_pool_size": 250,
+      "maint_refresh_interval": 600,
+      "ban_refresh_interval": 600,
+      "chef_min_version": 10,
+      "chef_max_version": 11,
+      "xdl_defaults": {
+        "503_mode": false,
+        "couchdb_containers": true,
+        "couchdb_groups": true
+      },
+      "ha": true
+    },
+    "lb_internal": {
+      "enable": true,
+      "vip": "127.0.0.1",
+      "chef_port": 9680,
+      "account_port": 9685,
+      "oc_bifrost_port": 9683
+    },
+    "nginx": {
+      "enable": true,
+      "ha": true,
+      "dir": "/var/opt/opscode/nginx",
+      "log_directory": "/var/log/opscode/nginx",
+      "log_rotation": {
+        "file_maxbytes": 104857600,
+        "num_to_keep": 10
+      },
+      "ssl_port": 443,
+      "enable_non_ssl": false,
+      "non_ssl_port": 80,
+      "x_forwarded_proto": "https",
+      "server_name": "api.opscode.kryptonite",
+      "url": "https://api.opscode.kryptonite",
+      "ssl_protocols": "SSLv3 TLSv1",
+      "ssl_ciphers": "RC4-SHA:RC4-MD5:RC4:RSA:HIGH:MEDIUM:!LOW:!kEDH:!aNULL:!ADH:!eNULL:!EXP:!SSLv2:!SEED:!CAMELLIA:!PSK",
+      "ssl_certificate": "/var/opt/opscode/nginx/ca/api.opscode.kryptonite.crt",
+      "ssl_certificate_key": "/var/opt/opscode/nginx/ca/api.opscode.kryptonite.key",
+      "ssl_country_name": "US",
+      "ssl_state_name": "WA",
+      "ssl_locality_name": "Seattle",
+      "ssl_company_name": "YouCorp",
+      "ssl_organizational_unit_name": "Operations",
+      "ssl_email_address": "you@example.com",
+      "worker_processes": 2,
+      "worker_connections": 10240,
+      "sendfile": "on",
+      "tcp_nopush": "on",
+      "tcp_nodelay": "on",
+      "gzip": "on",
+      "gzip_http_version": "1.0",
+      "gzip_comp_level": "2",
+      "gzip_proxied": "any",
+      "gzip_types": [
+        "text/plain",
+        "text/css",
+        "application/x-javascript",
+        "text/xml",
+        "application/xml",
+        "application/xml+rss",
+        "text/javascript",
+        "application/json"
+      ],
+      "keepalive_timeout": 65,
+      "client_max_body_size": "250m",
+      "cache_max_size": "5000m",
+      "enable_ipv6": false
+    },
+    "postgresql": {
+      "version": "9.2",
+      "enable": true,
+      "ha": true,
+      "dir": "/var/opt/opscode/postgresql/9.2",
+      "data_dir": "/var/opt/opscode/drbd/data/postgresql_9.2",
+      "log_directory": "/var/log/opscode/postgresql/9.2",
+      "log_rotation": {
+        "file_maxbytes": 104857600,
+        "num_to_keep": 10
+      },
+      "username": "opscode-pgsql",
+      "shell": "/bin/sh",
+      "home": "/var/opt/opscode/postgresql",
+      "user_path": "/opt/opscode/embedded/bin:/opt/opscode/bin:$PATH",
+      "sql_user": "opscode_chef",
+      "sql_password": "a3852363df1bc9cd0ff2bf162242d293d28a63b12be73dbfa3766e1c304fd42e97c7fc38a62e95782b012792cbba4e7cff2a",
+      "sql_ro_user": "opscode_chef_ro",
+      "sql_ro_password": "467f2a886d52faf054947bc6869c624ae229d9a367bdb52c90b9d1c9fcfb1adda7b68c930464c0938e8d7ac17cc90fd42c77",
+      "vip": "127.0.0.1",
+      "port": 5432,
+      "listen_address": "*",
+      "max_connections": 350,
+      "md5_auth_cidr_addresses": [
+        "0.0.0.0/0"
+      ],
+      "shmmax": 17179869184,
+      "shmall": 4194304,
+      "shared_buffers": "626MB",
+      "work_mem": "8MB",
+      "effective_cache_size": "128MB",
+      "checkpoint_segments": 3,
+      "checkpoint_timeout": "5min",
+      "checkpoint_completion_target": 0.5,
+      "checkpoint_warning": "30s"
+    },
+    "oc_bifrost": {
+      "enable": true,
+      "ha": true,
+      "dir": "/var/opt/opscode/oc_bifrost",
+      "log_directory": "/var/log/opscode/oc_bifrost",
+      "log_rotation": {
+        "file_maxbytes": 104857600,
+        "num_to_keep": 10
+      },
+      "vip": "127.0.0.1",
+      "listen": "127.0.0.1",
+      "port": 9463,
+      "superuser_id": "ef82513b04d7281f5c3657a7827b788b",
+      "db_pool_size": "20",
+      "sql_user": "bifrost",
+      "sql_password": "c8a50853c658070a591545035f67a7849d37228d2fe6a877b7d540b0298ad2340b3fa99de48be19ab35410a9ef99ffe49ed9",
+      "sql_ro_user": "bifrost_ro",
+      "sql_ro_password": "95cfe03e796a0fe700254e6761de846e7f530c526c2425f17691e9c334ff88defe4389bdac70a0e36f0a0e29ba19695d90d9",
+      "extended_perf_log": true
+    },
+    "oc_chef_authz": {
+      "http_init_count": 25,
+      "http_max_count": 100,
+      "http_cull_interval": "{1, min}",
+      "http_max_age": "{70, sec}",
+      "http_max_connection_duration": "{70, sec}",
+      "ibrowse_options": "[{connect_timeout, 5000}]"
+    },
+    "bookshelf": {
+      "enable": true,
+      "ha": true,
+      "dir": "/var/opt/opscode/bookshelf",
+      "data_dir": "/var/opt/opscode/drbd/data/bookshelf",
+      "log_directory": "/var/log/opscode/bookshelf",
+      "log_rotation": {
+        "file_maxbytes": 104857600,
+        "num_to_keep": 10
+      },
+      "vip": "backend1.opscode.kryptonite",
+      "listen": "0.0.0.0",
+      "port": 4321,
+      "stream_download": true,
+      "access_key_id": "09a81344e4b0cb0eb9a710f4c70b641cff6f4382",
+      "secret_access_key": "db005c3aaf86ce39176e73fd7d57593ae67c2b35ca1f757211d1a817124ef013a041408e1e1b730c",
+      "external_url": "host_header"
+    },
+    "opscode-certificate": {
+      "enable": true,
+      "ha": true,
+      "dir": "/var/opt/opscode/opscode-certificate",
+      "log_directory": "/var/log/opscode/opscode-certificate",
+      "log_rotation": {
+        "file_maxbytes": 104857600,
+        "num_to_keep": 10
+      },
+      "port": 5140,
+      "vip": "127.0.0.1",
+      "num_workers": "2",
+      "num_certificates_per_worker": "50"
+    },
+    "opscode-org-creator": {
+      "enable": true,
+      "ha": true,
+      "dir": "/var/opt/opscode/opscode-org-creator",
+      "log_directory": "/var/log/opscode/opscode-org-creator",
+      "log_rotation": {
+        "file_maxbytes": 104857600,
+        "num_to_keep": 10
+      },
+      "ready_org_depth": 10,
+      "max_workers": 1,
+      "create_wait_ms": 30000,
+      "create_splay_ms": 25000,
+      "port": 4369
+    },
+    "dark_launch": {
+      "quick_start": false,
+      "new_theme": true,
+      "private-chef": true,
+      "sql_users": true,
+      "add_type_and_bag_to_items": true,
+      "reporting": true,
+      "actions": false
+    },
+    "opscode-account": {
+      "enable": true,
+      "ha": true,
+      "dir": "/var/opt/opscode/opscode-account",
+      "log_directory": "/var/log/opscode/opscode-account",
+      "log_rotation": {
+        "file_maxbytes": 104857600,
+        "num_to_keep": 10
+      },
+      "proxy_user": "pivotal",
+      "session_secret_key": "4bd0ee0680f2df4ecbb1a30f2e7bd8bf2dac351c099a0625a90c528fbda52c1e2005f345159d62457dd9858663c562c424f8",
+      "environment": "privatechef",
+      "vip": "127.0.0.1",
+      "port": 9465,
+      "url": "http://127.0.0.1:9465",
+      "listen": "127.0.0.1:9465",
+      "backlog": 1024,
+      "tcp_nodelay": true,
+      "worker_timeout": 3600,
+      "validation_client_name": "chef",
+      "umask": "0022",
+      "worker_processes": 4
+    },
+    "opscode-chef-mover": {
+      "enable": true,
+      "ha": false,
+      "dir": "/var/opt/opscode/opscode-chef-mover",
+      "data_dir": "/var/opt/opscode/opscode-chef-mover/data",
+      "log_directory": "/var/log/opscode/opscode-chef-mover",
+      "log_rotation": {
+        "file_maxbytes": 1073741824,
+        "num_to_keep": 10
+      },
+      "bulk_fetch_batch_size": "5",
+      "max_cache_size": "10000",
+      "cache_ttl": "3600",
+      "db_pool_size": "5",
+      "ibrowse_max_sessions": 256,
+      "ibrowse_max_pipeline_size": 1
+    },
+    "bootstrap": {
+      "enable": false
+    },
+    "estatsd": {
+      "enable": true,
+      "dir": "/var/opt/opscode/estatsd",
+      "log_directory": "/var/log/opscode/estatsd",
+      "vip": "127.0.0.1",
+      "port": 9466
+    },
+    "drbd": {
+      "enable": true,
+      "dir": "/var/opt/opscode/drbd",
+      "data_dir": "/var/opt/opscode/drbd/data",
+      "sync_rate": "40M",
+      "shared_secret": "f0da25577477516bd833d7c706329dddc128a45ba89ef75fd4a2222d58b3",
+      "device": "/dev/drbd0",
+      "disk": "/dev/opscode/drbd",
+      "flexible_meta_disk": "internal",
+      "primary": {
+        "fqdn": "backend1.opscode.kryptonite",
+        "ip": "33.33.34.5",
+        "port": 7788
+      },
+      "secondary": {
+        "fqdn": "backend2.opscode.kryptonite",
+        "ip": "33.33.34.6",
+        "port": 7788
+      },
+      "version": "8.4.3",
+      "ipv6_on": false
+    },
+    "keepalived": {
+      "enable": true,
+      "dir": "/var/opt/opscode/keepalived",
+      "ipv6_on": false,
+      "log_directory": "/var/log/opscode/keepalived",
+      "log_rotation": {
+        "file_maxbytes": 104857600,
+        "num_to_keep": 10
+      },
+      "smtp_server": "127.0.0.1",
+      "smtp_connect_timeout": "30",
+      "vrrp_sync_group": "PC_GROUP",
+      "vrrp_sync_instance": "PC_VI",
+      "vrrp_instance_state": "BACKUP",
+      "vrrp_instance_interface": "eth1",
+      "vrrp_instance_virtual_router_id": "1",
+      "vrrp_instance_priority": "100",
+      "vrrp_instance_advert_int": "1",
+      "vrrp_instance_password": "018f9cc7f33377d8b54c70494f5c433255f581b2d9e679762ff83dab83ee5bfac109ed8e9af2efccae041438cf73b0ad6a83",
+      "vrrp_instance_ipaddress": "33.33.33.20",
+      "vrrp_instance_ipaddress_dev": "eth1",
+      "vrrp_instance_vrrp_unicast_bind": "33.33.33.21",
+      "vrrp_instance_vrrp_unicast_peer": "33.33.33.22",
+      "vrrp_instance_preempt_delay": 30,
+      "vrrp_instance_nopreempt": true,
+      "service_posthooks": {
+        "rabbitmq": "/opt/opscode/bin/wait-for-rabbit"
+      }
+    },
+    "ldap": {
+    },
+    "upgrades": {
+      "dir": "/var/opt/opscode/upgrades"
+    },
+    "lb-internal": {
+    },
+    "topology": "ha",
+    "servers": {
+      "backend1.opscode.kryptonite": {
+        "ipaddress": "33.33.33.21",
+        "cluster_ipaddress": "33.33.34.5",
+        "role": "backend",
+        "bootstrap": true,
+        "peer_ipaddress": "33.33.33.22"
+      },
+      "backend2.opscode.kryptonite": {
+        "ipaddress": "33.33.33.22",
+        "cluster_ipaddress": "33.33.34.6",
+        "role": "backend",
+        "bootstrap": false
+      },
+      "frontend1.opscode.kryptonite": {
+        "ipaddress": "33.33.33.23",
+        "role": "frontend"
+      }
+    },
+    "backend_vips": {
+      "fqdn": "backend.opscode.kryptonite",
+      "ipaddress": "33.33.33.20",
+      "device": "eth1",
+      "heartbeat_device": "eth2",
+      "ipaddress_with_netmask": "33.33.33.20"
+    },
+    "logs": {
+      "log_retention": {
+      },
+      "log_rotation": {
+      }
+    }
+  },
+  "run_list": [
+    "recipe[private-chef]"
+  ],
+  "runit": {
+    "sv_bin": "/opt/opscode/embedded/bin/sv",
+    "chpst_bin": "/opt/opscode/embedded/bin/chpst",
+    "service_dir": "/opt/opscode/service",
+    "sv_dir": "/opt/opscode/sv",
+    "lsb_init_dir": "/opt/opscode/init",
+    "executable": "/sbin/runit",
+    "start": "start runsvdir",
+    "stop": "stop runsvdir",
+    "reload": "reload runsvdir"
+  }
+}
