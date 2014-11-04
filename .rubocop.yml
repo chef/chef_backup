@@ -1,0 +1,13 @@
+Style/ClassAndModuleChildren:
+  EnforcedStyle: compact
+Metrics/ClassLength:
+  Max: 200
+Metrics/CyclomaticComplexity:
+  Max: 10
+Metrics/PerceivedComplexity:
+  Max: 10
+Metrics/MethodLength:
+  Max: 40
+AllCops:
+  Exclude:
+    - 'Guardfile'
