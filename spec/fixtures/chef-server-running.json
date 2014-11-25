@@ -1,5 +1,8 @@
 {
   "private_chef": {
+    "backup": {
+      "strategy": "tar"
+    },
     "api_version": "11.1.0",
     "flavor": "ec",
     "notification_email": "pc-default@opscode.com",

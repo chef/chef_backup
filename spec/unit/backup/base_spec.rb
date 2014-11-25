@@ -52,7 +52,12 @@ describe ChefBackup::Base do
     end
 
     context 'on a backend' do
-      subject { with_running_config('role' => 'backend') }
+      subject do
+        with_running_config(
+          'role' => 'backend',
+          'postgresql' => { 'username' => 'opscode-pgsql' }
+        )
+      end
 
       before do
         data_map = double('DataMap', services: { 'postgresql' => {} })

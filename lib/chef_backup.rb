@@ -3,6 +3,7 @@
 # All Rights Reserved
 
 require 'chef_backup/version'
+require 'chef_backup/logger'
 require 'chef_backup/data_map'
 require 'chef_backup/helpers'
 require 'chef_backup/backup'
@@ -30,8 +31,8 @@ module ChefRestore
     klass = type.to_s.split('_').map! { |w| w.capitalize }.join
     const_get(klass).new(config)
   rescue NoMethodError, NameError
-    msg = 'Invalid strategy.  '
-    msg << "Please set the backup['strategy'] in /etc/opscode/chef-server.rb"
+    msg = "Invalid strategy.  Please set the backup['strategy'] in "
+    msg << " /etc/opscode/chef-server.rb and run 'chef-server-ctl reconfigure'"
     puts msg
     exit 1
   end

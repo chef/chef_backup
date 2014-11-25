@@ -1,11 +1,12 @@
 require 'fileutils'
 require 'json'
 require 'time'
-require 'logger'
+require 'chef_backup/logger'
 
-# ChefBackup::Base class.  Provides common methods that are required for all
-# backup strategies.
-class ChefBackup::Base
+module ChefBackup
+# rubocop:disable IndentationWidth
+class Base
+  # rubocop:enable IndentationWidth
   include ChefBackup::Helpers
 
   attr_reader :private_chef, :sv_path, :base_path, :backup_time
@@ -16,24 +17,26 @@ class ChefBackup::Base
     @base_path = '/opt/opscode'
     @sv_path = "#{base_path}/sv"
     @backup_time = Time.now.strftime('%Y-%m-%d-%H-%M-%S')
-
-    if private_chef['backup']['logfile']
-      @logger = Logger.new(private_chef['backup']['logfile'])
-      @logger.formatter = lambda do |_, date, _, msg|
-        "#{date.strftime('%Y-%m-%d-%H-%M-%S')} #{msg}\n"
-      end
-    else
-      @logger = Logger.new($stdout)
-      @logger.formatter = ->(_, _, _, msg) { "#{msg}\n" }
-    end
+    init_logging
   end
 
   def backup
     not_implemented
   end
 
-  def log(msg, level = :info)
-    @logger.send(level, msg)
+  def init_logging
+    log = begin
+            if private_chef['backup'].key?('logfile')
+              private_chef['backup']['logfile']
+            else
+              nil
+            end
+          end
+    @log = ChefBackup::Logger.logger(log)
+  end
+
+  def log(msg, level = :warn)
+    @log.log(msg, level)
   end
 
   def tmp_dir
@@ -66,7 +69,7 @@ class ChefBackup::Base
     return false unless pg_dump?
     sql_file = "#{tmp_dir}/chef_backup-#{backup_time}.sql"
     cmd = ['/opt/opscode/embedded/bin/chpst',
-           '-u opscode-pgsql',
+           "-u #{private_chef['postgresql']['username']}",
            '/opt/opscode/embedded/bin/pg_dumpall',
            "> #{sql_file}"
           ].join(' ')
@@ -180,4 +183,5 @@ class ChefBackup::Base
     msg = "#{caller[0].split[1]} is not implemented for this strategy"
     fail NotImplementedError, msg
   end
+end
 end
