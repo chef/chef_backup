@@ -1,6 +1,7 @@
 require 'chef_backup'
 require 'bundler/setup'
 require 'json'
+require 'tempfile'
 
 def with_config(option, value)
   config = running_config
@@ -16,6 +17,10 @@ end
 
 def with_running_config(hash)
   described_class.new(running_config.merge('private_chef' => hash))
+end
+
+def with_path_and_running_config(path, hash)
+  described_class.new(path, running_config.merge('private_chef' => hash))
 end
 
 def setup_handy_default_variables
@@ -56,8 +61,11 @@ def setup_handy_default_variables
 end
 
 def running_config
-  f = File.expand_path('../fixtures/chef-server-running.json', __FILE__)
-  JSON.parse(File.read(f)).merge('private_chef' => { 'backup' => {} })
+  @config ||= begin
+    f = File.expand_path('../fixtures/chef-server-running.json', __FILE__)
+    JSON.parse(File.read(f)).merge!('private_chef' => { 'backup' => {} })
+  end
+  @config.dup
 end
 
 # TODO: These NOOP methods are nasty hacks.  Need to refactor the hell out of

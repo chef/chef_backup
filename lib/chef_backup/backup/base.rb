@@ -13,40 +13,19 @@ class Base
 
   # @param running_config [Hash] A hash of the private-chef-running.json
   def initialize(running_config)
-    @private_chef = default_config.merge(running_config['private_chef'])
+    @private_chef = DEFAULT_CONFIG.merge(running_config['private_chef'])
     @base_path = '/opt/opscode'
     @sv_path = "#{base_path}/sv"
     @backup_time = Time.now.strftime('%Y-%m-%d-%H-%M-%S')
-    init_logging
+    @log ||= ChefBackup::Logger.logger(private_chef['backup']['logfile'] || nil)
   end
 
   def backup
     not_implemented
   end
 
-  def init_logging
-    log = begin
-            if private_chef['backup'].key?('logfile')
-              private_chef['backup']['logfile']
-            else
-              nil
-            end
-          end
-    @log = ChefBackup::Logger.logger(log)
-  end
-
-  def log(msg, level = :warn)
+  def log(msg, level = :info)
     @log.log(msg, level)
-  end
-
-  def tmp_dir
-    @tmp_dir ||=
-      if private_chef['backup'].key?('tmp_dir') &&
-         private_chef['backup']['tmp_dir']
-        FileUtils.mkdir_p(private_chef['backup']['tmp_dir']).first
-      else
-        Dir.mktmpdir('pcc_backup')
-      end
   end
 
   def export_dir
@@ -55,8 +34,9 @@ class Base
         if private_chef['backup']['export_dir']
           private_chef['backup']['export_dir']
         else
-          log(["WARNING: backup['export_dir'] has not been set.",
-               'defaulting to: /var/opt/chef-backups'].join(' ')
+          log(["backup['export_dir'] has not been set.",
+               'defaulting to: /var/opt/chef-backups'].join(' '),
+             :warn
              )
           '/var/opt/chef-backups'
         end
@@ -116,68 +96,7 @@ class Base
     end
   end
 
-  def cleanup
-    log "Cleaning up #{tmp_dir}"
-    FileUtils.rm_r(tmp_dir)
-  rescue Errno::ENOENT
-    true
-  end
-
   private
-
-  def default_config
-    { 'backup' =>
-      { 'always_dump_db' => true,
-        'strategy' => 'none',
-        'export_dir' => '/var/opt/chef-backup'
-      }
-    }
-  end
-
-  def enabled_addons
-    @enabled_addons ||= %w(
-      opscode-manage
-      opscode-reporting
-      opscode-push-jobs-server
-      opscode-analytics
-    ).select { |service| addon?(service) }
-  end
-
-  def addon?(service)
-    File.directory?("/etc/#{service}")
-  end
-
-  def pg_dump?
-    if frontend? # don't dump postgres on frontends
-      false
-    elsif private_chef['backup']['always_dump_db'] == true # defaults to true
-      true
-    elsif strategy !~ /lvm|ebs/ && backend? # backup non-block device backends
-      true
-    else
-      false # if we made it here then we're on lvm/ebs and overrode defaults
-    end
-  end
-
-  def online?
-    not_implemented
-  end
-
-  def strategy
-    private_chef['backup']['strategy']
-  end
-
-  def frontend?
-    private_chef['role'] == 'frontend'
-  end
-
-  def backend?
-    private_chef['role'] =~  /backend|standalone/
-  end
-
-  def online?
-    private_chef['backup']['mode'] == 'online'
-  end
 
   def not_implemented
     msg = "#{caller[0].split[1]} is not implemented for this strategy"

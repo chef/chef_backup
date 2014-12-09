@@ -2,6 +2,14 @@ require 'mixlib/shellout'
 
 # Some of these are ported from omnibus-ctl
 module ChefBackup::Helpers
+  DEFAULT_CONFIG =
+    { 'backup' =>
+      { 'always_dump_db' => true,
+        'strategy' => 'none',
+        'export_dir' => '/var/opt/chef-backup'
+      }
+  }.freeze
+
   def integer?(string)
     Integer(string)
   rescue ArgumentError
@@ -73,5 +81,65 @@ module ChefBackup::Helpers
   def start_chef_server
     log 'Bringing up the Chef Server'
     enabled_services.each { |sv| start_service(sv) }
+  end
+
+  def enabled_addons
+    @enabled_addons ||= %w(
+      opscode-manage
+      opscode-reporting
+      opscode-push-jobs-server
+      opscode-analytics
+      chef-ha
+      chef-sync
+    ).select { |service| addon?(service) }
+  end
+
+  def addon?(service)
+    File.directory?("/etc/#{service}")
+  end
+
+  def pg_dump?
+    if frontend? # don't dump postgres on frontends
+      false
+    elsif private_chef['backup']['always_dump_db'] == true # defaults to true
+      true
+    elsif strategy !~ /lvm|ebs/ && backend? # backup non-block device backends
+      true
+    else
+      false # if we made it here then we're on lvm/ebs and overrode defaults
+    end
+  end
+
+  def strategy
+    private_chef['backup']['strategy']
+  end
+
+  def frontend?
+    private_chef['role'] == 'frontend'
+  end
+
+  def backend?
+    private_chef['role'] =~  /backend|standalone/
+  end
+
+  def online?
+    private_chef['backup']['mode'] == 'online'
+  end
+
+  def tmp_dir
+    @tmp_dir ||=
+      if private_chef['backup'].key?('tmp_dir') &&
+         private_chef['backup']['tmp_dir']
+        FileUtils.mkdir_p(private_chef['backup']['tmp_dir']).first
+      else
+        Dir.mktmpdir('pcc_backup')
+      end
+  end
+
+  def cleanup
+    log "Cleaning up #{tmp_dir}"
+    FileUtils.rm_r(tmp_dir)
+  rescue Errno::ENOENT
+    true
   end
 end

@@ -1,6 +1,9 @@
 # ChefBackup::Tar class.  Used to backup Standalone and Tier Servers that aren't
 # installed on LVM
-class ChefBackup::Tar < ChefBackup::Base
+module ChefBackup
+# rubocop:disable IndentationWidth
+class Tar < ChefBackup::Base
+  # rubocop:enable IndentationWidth
   def backup
     log 'Starting Chef Server backup'
     populate_data_map
@@ -73,4 +76,5 @@ class ChefBackup::Tar < ChefBackup::Base
 #    res = shell_out(cmd, cwd: tmp_dir)
 #    res
 #  end
+end
 end

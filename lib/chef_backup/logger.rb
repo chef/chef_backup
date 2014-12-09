@@ -16,26 +16,20 @@ class Logger
   attr_accessor :stdout
 
   def initialize(logfile = nil)
-    @stdout = logfile ? logfile : $stdout
+    @stdout = logfile || $stdout
     @highline = HighLine.new($stdin, @stdout)
   end
 
   def log(msg, level = :info)
     case level
     when :warn
-      if color?
-        @stdout.puts(@highline.color("WARNING: #{msg}", :bright_yellow, :bold))
-      else
-        @stdout.puts("WARNING: #{msg}")
-      end
+      msg = "WARNING: #{msg}"
+      @stdout.puts( color? ? @highline.color(msg, :bright_yellow) : msg)
     when :error
-      if color?
-        @stdout.puts(@highline.color("ERROR: #{msg}", :red, :bold))
-      else
-        @stdout.puts("ERROR: #{msg}")
-      end
+      msg = "ERROR: #{msg}"
+      @stdout.puts( color? ? @highline.color(msg, :bright_red) : msg)
     else
-      @stdout.puts msg
+      @stdout.puts(msg)
     end
   end
 

@@ -17,7 +17,7 @@ module ChefBackup
     const_get(klass).new(config)
   rescue NoMethodError, NameError
     msg = "Invalid strategy.  Please set the backup['strategy'] in "
-    msg << " /etc/opscode/chef-server.rb and run 'chef-server-ctl reconfigure'"
+    msg << "/etc/opscode/chef-server.rb and run 'chef-server-ctl reconfigure'"
     puts msg
     exit 1
   end
@@ -26,14 +26,15 @@ end
 # No module inheritence makes DRY a dull boy
 # ChefRestore factory returns an ChefRestore object
 module ChefRestore
-  def self.from_config(config)
+  def self.from_config(path, config)
     type = config['private_chef']['backup']['strategy']
     klass = type.to_s.split('_').map! { |w| w.capitalize }.join
-    const_get(klass).new(config)
-  rescue NoMethodError, NameError
+    const_get(klass).new(path, config)
+  rescue NoMethodError, NameError => e
     msg = "Invalid strategy.  Please set the backup['strategy'] in "
-    msg << " /etc/opscode/chef-server.rb and run 'chef-server-ctl reconfigure'"
+    msg << "/etc/opscode/chef-server.rb and run 'chef-server-ctl reconfigure'"
     puts msg
+    raise e
     exit 1
   end
 end
