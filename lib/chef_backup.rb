@@ -30,11 +30,10 @@ module ChefRestore
     type = config['private_chef']['backup']['strategy']
     klass = type.to_s.split('_').map! { |w| w.capitalize }.join
     const_get(klass).new(path, config)
-  rescue NoMethodError, NameError => e
+  rescue NoMethodError, NameError
     msg = "Invalid strategy.  Please set the backup['strategy'] in "
     msg << "/etc/opscode/chef-server.rb and run 'chef-server-ctl reconfigure'"
     puts msg
-    raise e
     exit 1
   end
 end

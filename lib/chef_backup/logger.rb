@@ -24,10 +24,10 @@ class Logger
     case level
     when :warn
       msg = "WARNING: #{msg}"
-      @stdout.puts( color? ? @highline.color(msg, :bright_yellow) : msg)
+      @stdout.puts( color? ? @highline.color(msg, :yellow) : msg)
     when :error
       msg = "ERROR: #{msg}"
-      @stdout.puts( color? ? @highline.color(msg, :bright_red) : msg)
+      @stdout.puts( color? ? @highline.color(msg, :red) : msg)
     else
       @stdout.puts(msg)
     end
