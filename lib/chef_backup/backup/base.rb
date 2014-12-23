@@ -17,7 +17,7 @@ class Base
     @base_path = '/opt/opscode'
     @sv_path = "#{base_path}/sv"
     @backup_time = Time.now.strftime('%Y-%m-%d-%H-%M-%S')
-    @log ||= ChefBackup::Logger.logger(private_chef['backup']['logfile'] || nil)
+    @logger = ChefBackup::Logger.logger(private_chef['backup']['logfile'] || nil)
   end
 
   def backup
@@ -25,7 +25,7 @@ class Base
   end
 
   def log(msg, level = :info)
-    @log.log(msg, level)
+    @logger.log(msg, level)
   end
 
   def export_dir
@@ -46,7 +46,7 @@ class Base
   end
 
   def dump_db
-    return false unless pg_dump?
+    return true unless pg_dump?
     sql_file = "#{tmp_dir}/chef_backup-#{backup_time}.sql"
     cmd = ['/opt/opscode/embedded/bin/chpst',
            "-u #{private_chef['postgresql']['username']}",

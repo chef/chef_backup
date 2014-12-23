@@ -57,24 +57,5 @@ class Tar < ChefBackup::Base
     res
   end
 
-#  def backup_opscode_config
-#    (%w(opscode) + enabled_addons).each do |service|
-#      log "Backing up #{service} config"
-#      shell_out("rsync -chaz /etc/#{service} #{tmp_dir}/")
-#      data_map.add_config(service, "/etc/#{service}")
-#    end
-#  end
-#
-#  def create_tarball
-#    log 'Creating backup tarball'
-#    cmd = [
-#      "tar -czf #{tmp_dir}/chef-backup-#{backup_time}.tgz",
-#      data_map.services.map { |_, v| v['data_dir'] }.compact.join(' '),
-#      Dir["#{tmp_dir}/*"].map { |f| File.basename(f) }.join(' ')
-#    ].join(' ').strip
-#
-#    res = shell_out(cmd, cwd: tmp_dir)
-#    res
-#  end
 end
 end
