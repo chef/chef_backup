@@ -1,21 +1,17 @@
-require 'chef_backup/logger'
 require 'fileutils'
 require 'pathname'
 
-module ChefRestore
+module ChefBackup
+module Strategy
 # rubocop:disable IndentationWidth
-class Tar
+class TarRestore
   # rubocop:enable IndentationWidth
   include ChefBackup::Helpers
 
-  attr_accessor :private_chef, :tarball_path, :sv_path, :base_path
+  attr_accessor :tarball_path
 
   def initialize(path, config)
-    @running_config = config
     @tarball_path = path
-    @private_chef = DEFAULT_CONFIG.merge(config['private_chef'])
-    @base_path = '/opt/opscode'
-    @sv_path = "#{base_path}/sv"
     @log = ChefBackup::Logger.logger(private_chef['backup']['logfile'] || nil)
   end
 
@@ -131,9 +127,5 @@ class Tar
     shell_out("chef-server-ctl reconfigure")
   end
 end # ChefBackup::Tar
-
-class InvalidTarball < StandardError; end
-class InvalidDatabaseDump < StandardError; end
-class InvalidManifest < StandardError; end
-
 end # ChefBackup
+end

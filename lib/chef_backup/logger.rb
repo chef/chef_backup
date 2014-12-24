@@ -6,7 +6,7 @@ class Logger
   # rubocop:enable IndentationWidth
   def self.logger(logfile = nil)
     @logger = nil if @logger && logfile && @logger.stdout != logfile
-    @logger ||= ChefBackup::Logger.new(logfile)
+    @logger ||= new(logfile)
   end
 
   def self.log(msg, level = :info)

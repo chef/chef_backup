@@ -1,6 +1,0 @@
-require 'chef_backup/restore/base'
-require 'chef_backup/restore/tar'
-require 'chef_backup/restore/lvm'
-require 'chef_backup/restore/ebs'
-require 'chef_backup/restore/object'
-require 'chef_backup/restore/custom'

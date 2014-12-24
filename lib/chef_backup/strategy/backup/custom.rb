@@ -1,7 +1,7 @@
 # - custom
 #   - Verify that backup executable exists and is runnable
 #   - exec script
-class ChefBackup::Custom < ChefBackup::Base
+class ChefBackup::Strategy::CustomBackup < ChefBackup::Strategy::TarBackup
   def backup
   end
 end

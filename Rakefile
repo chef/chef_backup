@@ -34,8 +34,7 @@ task :console do
   require 'json'
   f = File.expand_path('../spec/fixtures/chef-server-running.json', __FILE__)
   running_config = JSON.parse(File.read(f))
-  @backup = ChefBackup.from_config(running_config)
-  @restore = ChefRestore.from_config('/tmp/backup.tgz', running_config)
+  @backup = ChefBackup::Backup.new(running_config, '/tmp/backup.tgz')
   ARGV.clear
   Pry.config.history.should_save = true
   Pry.config.history.should_load = true

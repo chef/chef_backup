@@ -2,30 +2,18 @@ require 'mixlib/shellout'
 
 # Some of these are ported from omnibus-ctl
 module ChefBackup::Helpers
-  DEFAULT_CONFIG =
-    { 'backup' =>
-      { 'always_dump_db' => true,
-        'strategy' => 'none',
-        'export_dir' => '/var/opt/chef-backup'
-      }
-  }.freeze
-
   def integer?(string)
     Integer(string)
   rescue ArgumentError
     false
   end
 
-  def pgrp_from_pid(pid)
-    shell_out("ps -p #{pid} -o pgrp=").stdout
+  def private_chef
+    ChefBackup::Config.config['private_chef']
   end
 
-  def pids_from_pgrp(pgrp)
-    shell_out("pgrep -g #{pgrp}").stdout.split(/\n/).join(' ')
-  end
-
-  def sigkill_pgrp(pgrp)
-    shell_out("pkill -9 -g #{pgrp}")
+  def log(message, level = :info)
+    ChefBackup::Logger.logger.log(message, level)
   end
 
   def shell_out(*command)
@@ -42,7 +30,7 @@ module ChefBackup::Helpers
   end
 
   def all_services
-    Dir["#{sv_path}/*"].map { |f| File.basename(f) }.sort
+    Dir['/opt/opscode/sv/*'].map { |f| File.basename(f) }.sort
   end
 
   def enabled_services
@@ -54,11 +42,7 @@ module ChefBackup::Helpers
   end
 
   def service_enabled?(service)
-    File.symlink?("#{base_path}/service/#{service}")
-  end
-
-  def runit_command(service, command)
-    shell_out("#{base_path}/init/#{service} #{command}")
+    File.symlink?("/opt/opscode/service/#{service}")
   end
 
   def stop_service(service)
@@ -127,13 +111,14 @@ module ChefBackup::Helpers
   end
 
   def tmp_dir
-    @tmp_dir ||=
+    ChefBackup::Config['tmp_dir'] ||= begin
       if private_chef['backup'].key?('tmp_dir') &&
          private_chef['backup']['tmp_dir']
         FileUtils.mkdir_p(private_chef['backup']['tmp_dir']).first
       else
         Dir.mktmpdir('pcc_backup')
       end
+    end
   end
 
   def cleanup

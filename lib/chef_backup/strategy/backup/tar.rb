@@ -1,13 +1,16 @@
 require 'fileutils'
 require 'json'
 require 'time'
-require 'chef_backup/logger'
 
-module ChefBackup
+# ChefBackup::Tar class.  Used to backup Standalone and Tier Servers that aren't
+# installed on LVM
 # rubocop:disable IndentationWidth
-class Base
+module ChefBackup
+module Strategy
+class TarBackup
   # rubocop:enable IndentationWidth
   include ChefBackup::Helpers
+  include ChefBackup::Exceptions
 
   attr_reader :private_chef, :sv_path, :base_path, :backup_time
 
@@ -18,14 +21,7 @@ class Base
     @sv_path = "#{base_path}/sv"
     @backup_time = Time.now.strftime('%Y-%m-%d-%H-%M-%S')
     @logger = ChefBackup::Logger.logger(private_chef['backup']['logfile'] || nil)
-  end
-
-  def backup
-    not_implemented
-  end
-
-  def log(msg, level = :info)
-    @logger.log(msg, level)
+    @strategy = ChefBackup::Strategy.from_config(private_chef)
   end
 
   def export_dir
@@ -57,6 +53,17 @@ class Base
     res = shell_out!(cmd)
     data_map.services['postgresql']['pg_dump_success'] = true
     res
+  end
+
+  def populate_data_map
+    stateful_services.each do |service|
+      next unless private_chef.key?(service)
+      data_map.add_service(service, private_chef[service]['data_dir'])
+    end
+
+    config_directories.each do |config|
+      data_map.add_config(config, "/etc/#{config}")
+    end
   end
 
   def manifest
@@ -96,11 +103,53 @@ class Base
     end
   end
 
-  private
-
   def not_implemented
     msg = "#{caller[0].split[1]} is not implemented for this strategy"
     fail NotImplementedError, msg
   end
+
+  def backup
+    log 'Starting Chef Server backup'
+    populate_data_map
+    if backend?
+      stop_chef_server(except: [:keepalived, :postgresql]) unless online?
+      dump_db
+    end
+    write_manifest
+    create_tarball
+    start_chef_server if backend? && !online?
+    export_tarball
+    cleanup
+    log 'Backup Complete!'
+  rescue => e
+    log "Something wen't terribly wrong, aborting backup", :error
+    log e.message, :error
+    cleanup
+    start_chef_server
+    raise e
+  end
+
+  def create_tarball
+    log 'Creating backup tarball'
+    cmd = [
+      "tar -czf #{tmp_dir}/chef-backup-#{backup_time}.tgz",
+      data_map.services.map { |_, v| v['data_dir'] }.compact.join(' '),
+      data_map.configs.map { |_, v| v['data_dir'] }.compact.join(' '),
+      Dir["#{tmp_dir}/*"].map { |f| File.basename(f) }.join(' ')
+    ].join(' ').strip
+
+    res = shell_out(cmd, cwd: tmp_dir)
+    res
+  end
+
+  def export_tarball
+    log "Exporting tarball to #{export_dir}"
+    cmd = "rsync -chaz #{tmp_dir}/chef-backup-#{backup_time}.tgz #{export_dir}/"
+
+    res = shell_out(cmd)
+    res
+  end
+
+end
 end
 end

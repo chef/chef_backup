@@ -1,6 +1,6 @@
 # ChefBackup::Object class.  Used to backup all stateful services as an object
 # and stored locally in a filesystem structure in JSON.
-class ChefBackup::Object < ChefBackup::Base
+class ChefBackup::Strategy::ObjectBackup < ChefBackup::Strategy::TarBackup
   # - object
   #   - Make tmp directory
   #   - Ensure backup directory exists

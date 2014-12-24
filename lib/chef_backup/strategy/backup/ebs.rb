@@ -1,6 +1,6 @@
 # ChefBackup::Ebs class.  To be used when/if Enterprise Chef ever supports EBS
 # natively
-class ChefBackup::Ebs < ChefBackup::Base
+class ChefBackup::Strategy::EbsBackup < ChefBackup::Strategy::TarBackup
   # - ebs
   #   - Verify AWS credentials exist
   #   - Create backup manifest

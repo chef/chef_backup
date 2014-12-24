@@ -2,7 +2,7 @@
 # are on an LVM logical volume.  This may allow us to not require a pg_dump,
 # instead relying on pg_crash recovery.  Not doing a pg_dump will greatly
 # speed up backups.
-class ChefBackup::Lvm < ChefBackup::Tar
+class ChefBackup::Strategy::LvmBackup < ChefBackup::Strategy::TarBackup
   #   - verify config
   #   - Verify lv and vg existence
   #   - Warn if space is low in vg for an lvm snapshot

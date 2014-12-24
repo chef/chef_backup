@@ -128,59 +128,65 @@ describe ChefBackup::Base do
     end
   end
 
-#  describe '.backup_opscode_config' do
-#    addons = %w(
-#      opscode-reporting
-#      opscode-push-jobs-server
-#      opscode-analytics
-#      opscode-manage
-#    )
-#
-#    before do
-#      data_map = double('DataMap', add_config: true, add_service: true)
-#      allow(subject).to receive(:data_map).and_return(data_map)
-#      allow(subject).to receive(:tmp_dir).and_return(tmp_dir)
-#    end
-#
-#    it 'always backs up the private-chef config' do
-#      cmd = "rsync -chaz /etc/opscode #{tmp_dir}/"
-#      expect(subject).to receive(:shell_out).with(cmd)
-#      subject.backup_opscode_config
-#    end
-#
-#    it 'updates the opscode entry in the data map' do
-#      expect(subject.data_map)
-#        .to receive(:add_config)
-#        .with('opscode', '/etc/opscode')
-#      subject.backup_opscode_config
-#    end
-#
-#    addons.each do |service|
-#      context "when #{service} is installed" do
-#        before { allow(subject).to receive(:addon?).and_return(true) }
-#
-#        it "backs up the #{service} config" do
-#          cmd = "rsync -chaz /etc/#{service} #{tmp_dir}/"
-#          expect(subject).to receive(:shell_out).with(cmd)
-#          subject.backup_opscode_config
-#        end
-#
-#        it "updates the #{service} entry in the data map" do
-#          expect(subject.data_map)
-#            .to receive(:add_config)
-#          subject.backup_opscode_config
-#        end
-#      end
-#
-#      context "when #{service} isn't installed" do
-#        before { allow(subject).to receive(:addon?).and_return(false) }
-#
-#        it "does not try to backup #{service}'s config" do
-#          expect(subject.backup_opscode_config).to_not receive(:shell_out)
-#        end
-#      end
-#    end
-#  end
+  describe '.populate_data_map' do
+    let(:services) { %w(opscode-solr4 bookshelf rabbitmq) }
+    let(:configs) { %w(opscode opscode-manage opscode-analytics) }
+    let(:config) do
+      { 'bookshelf' => { 'data_dir' => '/bookshelf/data' },
+        'opscode-solr4' => { 'data_dir' => '/solr4/data' },
+        'rabbitmq' => { 'data_dir' => '/rabbitmq/data' }
+      }
+    end
+
+    before do
+      allow(subject).to receive(:data_map).and_return(data_map)
+      allow(subject).to receive(:stateful_services).and_return(services)
+      allow(subject).to receive(:config_directories).and_return(configs)
+      %w(add_service add_config).each do |method|
+        allow(data_map).to receive(method.to_sym).and_return(true)
+      end
+    end
+
+    %w(frontend backend standalone).each do |role|
+      context "on a #{role}" do
+        subject { with_running_config(config.merge('role' => role)) }
+
+        it 'populates the data map with config directories' do
+          configs.each do |config|
+            expect(subject.data_map)
+              .to receive(:add_config)
+              .with(config, "/etc/#{config}")
+          end
+
+          subject.populate_data_map
+        end
+      end
+    end
+
+    %w(backend standalone).each do |role|
+      context "on a #{role}" do
+        subject { with_running_config(config.merge('role' => role)) }
+
+        it 'populates the data map with service directories' do
+          services.each do |service|
+            expect(subject.data_map)
+              .to receive(:add_service)
+              .with(service, config[service]['data_dir'])
+          end
+
+          subject.populate_data_map
+        end
+      end
+    end
+
+    context 'on a frontend' do
+      subject { with_running_config(config.merge('role' => 'frontend')) }
+
+      it "doesn't populate the data map with the services" do
+        expect(subject.data_map).to_not receive(:add_service)
+      end
+    end
+  end
 
   describe '.cleanup' do
     before do
