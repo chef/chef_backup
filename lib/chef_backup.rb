@@ -1,4 +1,4 @@
-# Copyright:: Copyright (c) 2014 Opscode, Inc.
+# Copyright:: Copyright (c) 2014 Chef, Inc.
 #
 # All Rights Reserved
 
