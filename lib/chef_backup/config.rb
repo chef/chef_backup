@@ -33,7 +33,7 @@ module ChefBackup
       #
       def from_json_file(file)
         path = File.expand_path(file)
-        @config = new(JSON.parse(File.read(path))) if File.exist?(path)
+        @@config = new(JSON.parse(File.read(path))) if File.exist?(path)
       end
     end
 
