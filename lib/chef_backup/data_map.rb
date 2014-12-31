@@ -1,7 +1,7 @@
 require 'time'
 
 # DataMap class to store data about the data we're backing up
-class ChefBackup
+module ChefBackup
   class DataMap
 
     class << self

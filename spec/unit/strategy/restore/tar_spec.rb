@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe ChefRestore::Tar do
+describe ChefBackup::Strategy::TarRestore do
   let(:manifest) do
     {"strategy"=>"tar",
      "backup_time"=>"2014-12-02-22-46-58",
