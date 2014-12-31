@@ -1,15 +1,25 @@
+require 'fileutils'
 require 'mixlib/shellout'
+require 'chef_backup/config'
+require 'chef_backup/logger'
 
 # Some of these are ported from omnibus-ctl
-module ChefBackup::Helpers
-  def integer?(string)
-    Integer(string)
-  rescue ArgumentError
-    false
-  end
+# rubocop:disable IndentationWidth
+module ChefBackup
+module Helpers
+  # rubocop:enable IndentationWidth
+
+  SERVER_ADD_ONS = %w(
+      opscode-manage
+      opscode-reporting
+      opscode-push-jobs-server
+      opscode-analytics
+      chef-ha
+      chef-sync
+  ).freeze
 
   def private_chef
-    ChefBackup::Config.config['private_chef']
+    ChefBackup::Config['private_chef']
   end
 
   def log(message, level = :info)
@@ -68,14 +78,7 @@ module ChefBackup::Helpers
   end
 
   def enabled_addons
-    @enabled_addons ||= %w(
-      opscode-manage
-      opscode-reporting
-      opscode-push-jobs-server
-      opscode-analytics
-      chef-ha
-      chef-sync
-    ).select { |service| addon?(service) }
+    SERVER_ADD_ONS.select { |service| addon?(service) }
   end
 
   def addon?(service)
@@ -127,4 +130,5 @@ module ChefBackup::Helpers
   rescue Errno::ENOENT
     true
   end
+end
 end

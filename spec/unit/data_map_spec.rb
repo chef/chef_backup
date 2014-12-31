@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe ChefBackup::DataMap do
-  setup_handy_default_variables
+  set_common_variables
 
   describe '.initialize' do
     it 'yields a config block' do

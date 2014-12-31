@@ -2,7 +2,7 @@ require 'fileutils'
 require 'pathname'
 
 module ChefBackup
-  class Backup
+  class Runner
     include ChefBackup::Helpers
     include ChefBackup::Exceptions
 
@@ -12,7 +12,7 @@ module ChefBackup
     # @param running_config [Hash] A hash of the private-chef-running.json
     # @param restore_param [String] A path to tarball or Block Device ID
     #
-    # @return [ChefBackup::Backup]
+    # @return [ChefBackup::Runner]
     #
     def initialize(running_config, restore_param = nil)
       ChefBackup::Config.config = running_config
@@ -32,7 +32,7 @@ module ChefBackup
     # @return [TrueClass, FalseClass] Execute Chef Server restore
     #
     def restore
-      @backup ||= ChefBackup::Strategy.restore(restore_strategy)
+      @restore ||= ChefBackup::Strategy.restore(restore_strategy)
       @restore.restore(restore_param)
     end
 
@@ -44,16 +44,18 @@ module ChefBackup
     end
 
     #
-    # @param path [String] A path to backup tarball or EBS snapshot ID
+    # @return [String] A path to backup tarball or EBS snapshot ID
     #
     def restore_strategy
-      if tarball?
-        unpack_tarball
-        manifest['strategy']
-      elsif ebs_snapshot?
-        'ebs'
-      else
-        fail InvalidStrategy, "#{restore_param} is not a valid backup"
+      @restore_strategy ||= begin
+        if tarball?
+          unpack_tarball
+          manifest['strategy']
+        elsif ebs_snapshot?
+          'ebs'
+        else
+          fail InvalidStrategy, "#{restore_param} is not a valid backup"
+        end
       end
     end
 
@@ -61,44 +63,76 @@ module ChefBackup
     # @return [TrueClass, FalseClass] Is the restore_param is a tarball?
     #
     def tarball?
-      file = Pathname.new(restore_param)
+      file = Pathname.new(File.expand_path(restore_param))
       file.exist? && file.extname == '.tgz'
     end
 
     #
-    # @return [TrueClass, FalseClass] Is the restore_param an EBS Snapshot?
+    # @return [TrueClass, FalseClass] Is the restore_param an EBS Snapshot ID?
     #
     def ebs_snapshot?
-      # TODO: verify that it's a snapshot
+      # TODO: verify that it's an ebs snapshot id
     end
 
     #
     # @return [TrueClass, FalseClass] Expands tarball into restore directory
     #
     def unpack_tarball
-      ensure_file!(restore_param, InvalidTarball, "#{restore_param} not found")
-      log "Expanding tarball: #{restore_param}"
-      shell_out!("tar zxf #{restore_param} -C #{restore_directory}")
+      file = File.expand_path(restore_param)
+      ensure_file!(file, InvalidTarball, "#{file} not found")
+      log "Expanding tarball: #{file}"
+      shell_out!("tar zxf #{file} -C #{restore_directory}")
     end
 
+    #
+    # @param file [String] A path to a file on disk
+    # @param exception [Exception] An exception to raise if file is not present
+    # @param message [String] Exception message to raise
+    #
+    # @return [TrueClass, FalseClass]
+    #
     def ensure_file!(file, exception, message)
       File.exists?(file) ? true : fail(exception, message)
     end
 
+    #
+    # @return [String] The backup name from the restore param
+    #
     def backup_name
-      @backup_name ||= Pathname.new(restore_param).basename.sub_ext('').to_s
+      if tarball?
+        Pathname.new(restore_param).basename.sub_ext('').to_s
+      elsif ebs_snapshot?
+        restore_param
+      end
     end
 
+    #
+    # Sets the restore_dir in ChefBackup::Config and ensures the directory
+    # exists and is cleaned.
+    #
+    # @return [String] A path to the restore directory
+    #
     def restore_directory
       ChefBackup::Config['restore_dir'] ||= begin
         dir_name = File.join(tmp_dir, backup_name)
-        # clean restore directory if it exists
         if File.directory?(dir_name)
+          # clean restore directory if it exists
           FileUtils.rm_r(Dir.glob("#{dir_name}/*"))
         else
           FileUtils.mkdir_p(dir_name)
         end
         dir_name
+      end
+    end
+
+    #
+    # @return [Hash] A parsed copy of the manifest.json in the backup tarball
+    #
+    def manifest
+      @manifest ||= begin
+        file = "#{restore_dir}/manifest.json"
+        ensure_file!(file, InvalidTarball, "No manifest found in tarball")
+        JSON.parse(File.read(file))
       end
     end
   end

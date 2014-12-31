@@ -1,6 +1,5 @@
 require 'fileutils'
 require 'json'
-require 'singleton'
 
 module ChefBackup
   class Config
@@ -14,11 +13,19 @@ module ChefBackup
 
     class << self
       def config
-        @config ||= new
+        @@config ||= new
       end
 
       def config=(hash)
-        @config = new(hash)
+        @@config = new(hash)
+      end
+
+      def [](key)
+        self.config[key]
+      end
+
+      def []=(key, value)
+        self.config[key] = value
       end
 
       #

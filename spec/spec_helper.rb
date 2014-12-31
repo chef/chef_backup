@@ -23,11 +23,12 @@ def with_path_and_running_config(path, hash)
   described_class.new(path, running_config.merge('private_chef' => hash))
 end
 
-def setup_handy_default_variables
+def set_common_variables
+  let(:backup_tarball) { '/tmp/chef-backup-2014-12-10-20-31-40.tgz' }
   let(:backup_time) { '2014-08-21T23:10:57-07:00' }
-  let(:tmp_dir) { '/mnt/ec-backups' }
+  let(:tmp_dir) { '/tmp/chef-backup' }
   let(:strategy) { 'test' }
-  let(:export_dir) { '/mnt/backups' }
+  let(:export_dir) { '/mnt/chef-backups' }
   let(:all_services) do
     %w(nginx oc_bifrost oc_id opscode-erchef opscode-expander
        opscode-expander-reindexer opscode-solr4 postgresql rabbitmq redis_lb

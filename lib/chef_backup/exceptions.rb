@@ -1,9 +1,10 @@
 module ChefBackup
   module Exceptions
-    class InvalidTarball < StandardError; end
-    class InvalidDatabaseDump < StandardError; end
-    class InvalidManifest < StandardError; end
-    class InvalidStrategy < StandardError; end
-    class NotImplementedError < StandardError; end
+    class ChefBackupException < StandardError; end
+    class InvalidTarball < ChefBackupException; end
+    class InvalidDatabaseDump < ChefBackupException; end
+    class InvalidManifest < ChefBackupException; end
+    class InvalidStrategy < ChefBackupException; end
+    class NotImplementedError < ChefBackupException; end
   end
 end
