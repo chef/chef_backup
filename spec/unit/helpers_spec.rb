@@ -9,6 +9,8 @@ describe ChefBackup::Helpers do
     Object.send(:remove_const, :HelperTest)
   end
 
+  subject { HelperTest.new }
+
   describe '.tmp_dir' do
     context 'with default settings' do
       it 'creates a temp directory' do
@@ -19,15 +21,14 @@ describe ChefBackup::Helpers do
     end
 
     context 'with a specific backup directory' do
-      let(:temp_dir) { '/tmp/pccbak' }
-      subject { with_config('tmp_dir', temp_dir) }
+      let(:tmp_dir) { '/tmp/pccbak' }
+      before { private_chef({ 'backup' => { 'tmp_dir' => tmp_dir }}) }
 
       it 'uses the specified directory' do
-        allow(FileUtils).to receive(:mkdir_p).and_return([temp_dir])
-        expect(FileUtils).to receive(:mkdir_p).with(temp_dir)
+        allow(FileUtils).to receive(:mkdir_p).and_return([tmp_dir])
+        expect(FileUtils).to receive(:mkdir_p).with(tmp_dir)
         subject.tmp_dir
       end
     end
   end
-
 end

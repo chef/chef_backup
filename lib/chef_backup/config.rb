@@ -1,8 +1,11 @@
 require 'fileutils'
 require 'json'
+require 'forwardable'
 
 module ChefBackup
   class Config
+    extend Forwardable
+
     DEFAULT_CONFIG = {
       'backup' => {
         'always_dump_db' => true,
@@ -13,11 +16,11 @@ module ChefBackup
 
     class << self
       def config
-        @@config ||= new
+        @config ||= new
       end
 
       def config=(hash)
-        @@config = new(hash)
+        @config = new(hash)
       end
 
       def [](key)
@@ -33,23 +36,22 @@ module ChefBackup
       #
       def from_json_file(file)
         path = File.expand_path(file)
-        @@config = new(JSON.parse(File.read(path))) if File.exist?(path)
+        @config = new(JSON.parse(File.read(path))) if File.exist?(path)
       end
     end
 
     #
     # @param config [Hash] a Hash of the private-chef-running.json
     #
-    def initialize(config)
-      @config = DEFAULT_CONFIG.merge(config)
+    def initialize(config = {})
+      config['private_chef'] ||= {}
+      config['private_chef']['backup'] ||= {}
+      config['private_chef']['backup'] =
+        DEFAULT_CONFIG['backup'].merge(config['private_chef']['backup'])
+      @config = config
     end
 
-    def [](key)
-      @config[key]
-    end
+    def_delegators :@config, :[], :[]=
 
-    def []=(key, value)
-      @config[key] = value
-    end
   end
 end

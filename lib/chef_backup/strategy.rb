@@ -21,8 +21,8 @@ module ChefBackup
         const_get("#{strategy.capitalize}Backup").new
       end
 
-      def restore(strategy)
-        const_get("#{strategy.capitalize}Restore").new
+      def restore(strategy, param)
+        const_get("#{strategy.capitalize}Restore").new(param)
       end
     end
   end

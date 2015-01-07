@@ -28,4 +28,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'guard-rspec'
   spec.add_development_dependency 'pry-rescue'
   spec.add_development_dependency 'rubocop', '~> 0.25'
+  spec.add_development_dependency 'chef'
 end

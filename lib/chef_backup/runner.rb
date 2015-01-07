@@ -32,8 +32,8 @@ module ChefBackup
     # @return [TrueClass, FalseClass] Execute Chef Server restore
     #
     def restore
-      @restore ||= ChefBackup::Strategy.restore(restore_strategy)
-      @restore.restore(restore_param)
+      @restore ||= ChefBackup::Strategy.restore(restore_param, restore_strategy)
+      @restore.restore
     end
 
     #
@@ -82,17 +82,6 @@ module ChefBackup
       ensure_file!(file, InvalidTarball, "#{file} not found")
       log "Expanding tarball: #{file}"
       shell_out!("tar zxf #{file} -C #{restore_directory}")
-    end
-
-    #
-    # @param file [String] A path to a file on disk
-    # @param exception [Exception] An exception to raise if file is not present
-    # @param message [String] Exception message to raise
-    #
-    # @return [TrueClass, FalseClass]
-    #
-    def ensure_file!(file, exception, message)
-      File.exists?(file) ? true : fail(exception, message)
     end
 
     #

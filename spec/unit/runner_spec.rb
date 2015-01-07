@@ -35,7 +35,7 @@ describe ChefBackup::Runner do
       allow(subject).to receive(:restore_strategy).and_return('test')
       allow(ChefBackup::Strategy)
         .to receive(:restore)
-        .with('test')
+        .with(backup_tarball, 'test')
         .and_return(test_strategy)
 
       expect(test_strategy).to receive(:restore).once

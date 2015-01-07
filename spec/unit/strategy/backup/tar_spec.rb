@@ -1,14 +1,14 @@
 require 'spec_helper'
+require 'chef/mixin/deep_merge'
 
 describe ChefBackup::Strategy::TarBackup do
   set_common_variables
 
-  subject { described_class.new(running_config) }
+  subject { described_class.new }
 
   before do
     allow(subject).to receive(:tmp_dir).and_return(tmp_dir)
     allow(subject).to receive(:backup_time).and_return(backup_time)
-    allow(subject).to receive(:dump_db).and_return(true)
   end
 
   describe '.backup' do
@@ -20,7 +20,7 @@ describe ChefBackup::Strategy::TarBackup do
     end
 
     context 'on a frontend' do
-      subject { with_running_config('role' => 'frontend') }
+      before { private_chef('role' => 'frontend') }
 
       it 'doesnt stop any services' do
         expect(subject).to_not receive(:stop_service)
@@ -33,62 +33,11 @@ describe ChefBackup::Strategy::TarBackup do
       end
     end
 
-    describe '.dump_db' do
-      let(:dump_cmd) do
-        ['/opt/opscode/embedded/bin/chpst',
-         '-u opscode-pgsql',
-         '/opt/opscode/embedded/bin/pg_dumpall',
-         "> #{tmp_dir}/chef_backup-#{backup_time}.sql"
-        ].join(' ')
-      end
-
-      before do
-        allow(subject).to receive(:tmp_dir).and_return(tmp_dir)
-        allow(subject).to receive(:backup_time).and_return(backup_time)
-      end
-
-      context 'on a backend' do
-        subject do
-          with_running_config(
-            'role' => 'backend',
-            'postgresql' => { 'username' => 'opscode-pgsql' }
-          )
-        end
-
-        before do
-          data_map = double('DataMap', services: { 'postgresql' => {} })
-          allow(subject).to receive(:data_map).and_return(data_map)
-        end
-
-        it 'dumps the db' do
-          expect(subject).to receive(:shell_out!).with(dump_cmd)
-          subject.dump_db
-        end
-
-        it 'updates the data map' do
-          expect(subject.data_map.services['postgresql'])
-            .to receive(:[]=)
-            .with('pg_dump_success', true)
-          subject.dump_db
-        end
-      end
-
-      context 'on a frontend' do
-        subject { with_running_config('role' => 'frontend') }
-
-        it "doesn't dump the db" do
-          expect(subject.dump_db).to_not receive(:shell_out).with(/pg_dumpall/)
-        end
-      end
-    end
-
     %w(backend standalone).each do |role|
       context "on a #{role}" do
         context 'during an online backup' do
-          subject do
-            with_running_config(
-              'role' => role, 'backup' => { 'mode' => 'online' }
-            )
+          before do
+            private_chef('role' => role, 'backup' => { 'mode' => 'online' })
           end
 
           it "doesn't start any services" do
@@ -117,7 +66,7 @@ describe ChefBackup::Strategy::TarBackup do
           }
         ].each do |mode|
           context mode[:context] do
-            subject { with_running_config(mode[:config]) }
+            before { private_chef(mode[:config]) }
 
             it 'stops all services besides keepalived and postgres' do
               expect(subject).to receive(:stop_chef_server).once
@@ -145,7 +94,7 @@ describe ChefBackup::Strategy::TarBackup do
 
     %w(frontend backend standalone).each do |node|
       context "on a #{node}" do
-        subject { with_running_config('role' => node) }
+        before { private_chef('role' => node) }
 
         it 'populates the data map with services and configs' do
           expect(subject).to receive(:populate_data_map).once
@@ -166,6 +115,55 @@ describe ChefBackup::Strategy::TarBackup do
           expect(subject).to receive(:cleanup).at_least(:once)
           subject.backup
         end
+      end
+    end
+  end
+
+  describe '.dump_db' do
+    let(:dump_cmd) do
+      ['/opt/opscode/embedded/bin/chpst',
+       '-u opscode-pgsql',
+       '/opt/opscode/embedded/bin/pg_dumpall',
+       "> #{tmp_dir}/chef_backup-#{backup_time}.sql"
+      ].join(' ')
+    end
+
+    let(:tmp_dir) { '/tmp/fuckingshit' }
+    let(:backup_time) { Time.now }
+
+    before do
+      allow(subject).to receive(:tmp_dir).and_return(tmp_dir)
+      allow(subject).to receive(:backup_time).and_return(backup_time)
+      allow(subject).to receive(:shell_out!).with(dump_cmd).and_return(true)
+      private_chef('postgresql' => {'username' => 'opscode-pgsql'})
+      subject.data_map.add_service('postgresql', '/data/dir')
+    end
+
+    %w(backend standalone).each do |role|
+      context "on a #{role}" do
+        before do
+          private_chef('role' => role)
+        end
+
+        it 'dumps the db' do
+          expect(subject).to receive(:shell_out!).with(dump_cmd)
+          subject.dump_db
+        end
+
+        it 'updates the data map' do
+          subject.dump_db
+          expect(subject.data_map.services['postgresql'])
+            .to include('pg_dump_success' => true)
+        end
+      end
+    end
+
+    context 'on a frontend' do
+      before { private_chef('role' => 'frontend') }
+
+      it "doesn't dump the db" do
+        expect(subject).to_not receive(:shell_out).with(/pg_dumpall/)
+        subject.dump_db
       end
     end
   end
@@ -193,7 +191,7 @@ describe ChefBackup::Strategy::TarBackup do
   describe '.export_tarball' do
     before do
       noop_external_methods_except(:export_tarball)
-      allow(subject).to receive(:export_dir).and_return('/mnt/backups')
+      allow(subject).to receive(:export_dir).and_return('/mnt/chef-backups')
     end
 
     it 'moves the tarball to the archive location' do
@@ -216,16 +214,17 @@ describe ChefBackup::Strategy::TarBackup do
       }
     end
 
+    let(:file) { double('file', write: true) }
+
     before do
       allow(subject).to receive(:manifest).and_return(manifest)
       allow(subject).to receive(:tmp_dir).and_return(tmp_dir)
-      @file = double('file', write: true)
-      allow(File).to receive(:open).and_yield(@file)
+      allow(File).to receive(:open).and_yield(file)
     end
 
     it 'converts the manifest to json' do
       json_manifest = JSON.pretty_generate(subject.manifest)
-      expect(@file).to receive(:write).with(json_manifest)
+      expect(file).to receive(:write).with(json_manifest)
       subject.write_manifest
     end
 
@@ -256,7 +255,7 @@ describe ChefBackup::Strategy::TarBackup do
 
     %w(frontend backend standalone).each do |role|
       context "on a #{role}" do
-        subject { with_running_config(config.merge('role' => role)) }
+        before { private_chef(config.merge('role' => role)) }
 
         it 'populates the data map with config directories' do
           configs.each do |config|
@@ -272,7 +271,7 @@ describe ChefBackup::Strategy::TarBackup do
 
     %w(backend standalone).each do |role|
       context "on a #{role}" do
-        subject { with_running_config(config.merge('role' => role)) }
+        before { private_chef(config.merge('role' => role)) }
 
         it 'populates the data map with service directories' do
           services.each do |service|
@@ -287,7 +286,7 @@ describe ChefBackup::Strategy::TarBackup do
     end
 
     context 'on a frontend' do
-      subject { with_running_config(config.merge('role' => 'frontend')) }
+      before { private_chef(config.merge('role' => 'frontend')) }
 
       it "doesn't populate the data map with the services" do
         expect(subject.data_map).to_not receive(:add_service)

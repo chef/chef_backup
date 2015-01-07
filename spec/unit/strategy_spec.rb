@@ -21,7 +21,7 @@ describe ChefBackup::Strategy do
 
   describe '.restore' do
     it 'it returns a restore strategy' do
-      expect(described_class.restore('test'))
+      expect(described_class.restore('test', '/some/backup.tgz'))
         .to be_an(ChefBackup::Strategy::TestRestore)
     end
   end

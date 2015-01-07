@@ -26,6 +26,17 @@ module Helpers
     ChefBackup::Logger.logger.log(message, level)
   end
 
+  #
+  # @param file [String] A path to a file on disk
+  # @param exception [Exception] An exception to raise if file is not present
+  # @param message [String] Exception message to raise
+  #
+  # @return [TrueClass, FalseClass]
+  #
+  def ensure_file!(file, exception, message)
+    File.exists?(file) ? true : fail(exception, message)
+  end
+
   def shell_out(*command)
     cmd = Mixlib::ShellOut.new(*command)
     cmd.live_stream ||= $stdout.tty? ? $stdout : nil

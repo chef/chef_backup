@@ -41,16 +41,17 @@ describe ChefBackup::Strategy::TarRestore do
           .to receive(:restore_data)
           .with(:services, service)
           .and_return(true)
+
       end
       allow(subject).to receive(:tarball_path).and_return(tarball_path)
-      allow(subject).to receive(:restore_directory).and_return('/tmp/restore')
       allow(subject).to receive(:manifest).and_return(manifest)
+
+      ChefBackup::Config['restore_dir'] = '/tmp/chef_backup/restore'
     end
 
     context 'on a frontend' do
-      subject do
-        with_path_and_running_config(
-          tarball_path,
+      before do
+        private_chef(
           'role' => 'frontend',
           'backup' => {}
         )
@@ -65,9 +66,8 @@ describe ChefBackup::Strategy::TarRestore do
 
     %w(backend standalone).each do |role|
       context "on a #{role}" do
-        subject do
-          with_path_and_running_config(
-            tarball_path,
+        before do
+          private_chef(
             'role' => role,
             'backup' => {}
           )
@@ -107,9 +107,8 @@ describe ChefBackup::Strategy::TarRestore do
 
     %w(frontend backend standalone).each do |role|
       context "on a #{role}" do
-        subject do
-          with_path_and_running_config(
-            tarball_path,
+        before do
+          private_chef(
             'role' => role,
             'backup' => {}
           )
@@ -117,11 +116,6 @@ describe ChefBackup::Strategy::TarRestore do
 
         it 'stops the server' do
           expect(subject).to receive(:stop_chef_server).once
-          subject.restore
-        end
-
-        it 'unpacks the tarball' do
-          expect(subject).to receive(:unpack_tarball).once
           subject.restore
         end
 
@@ -151,41 +145,27 @@ describe ChefBackup::Strategy::TarRestore do
     end
   end
 
-  describe '.unpack_tarball' do
-    let(:restore_dir) { '/tmp/restore_dir' }
-
-    it 'raises an error if the tarball is invalid' do
-      allow(subject).to receive(:shell_out!).and_return(false)
-      expect { subject.unpack_tarball }
-        .to raise_error(ChefRestore::InvalidTarball,
-                        "#{tarball_path} not found")
-    end
-
-    it 'explodes the tarball into the restore directory' do
-      allow(subject).to receive(:ensure_file!).and_return(true)
-      allow(subject).to receive(:restore_directory).and_return(restore_dir)
-      allow(subject).to receive(:shell_out!).and_return(true)
-      allow(subject).to receive(:tarball_path).and_return(tarball_path)
-
-      cmd = "tar zxf #{tarball_path} -C #{restore_dir}"
-      expect(subject).to receive(:shell_out!).with(cmd)
-      subject.unpack_tarball
-    end
-  end
-
   describe '.manifest' do
-    let(:restore_dir) { '/tmp/restore_dir' }
-    let(:manifest_path) { File.join(restore_dir, 'manifest.json') }
+    let(:restore_dir) { '/tmp/chef_backup/restore' }
+    let(:json) { "{\"some\":\"json\"}" }
+    let(:manifest_json) { File.join(restore_dir, 'manifest.json') }
 
     before do
-      allow(subject).to receive(:restore_directory).and_return(restore_dir)
+      ChefBackup::Config['restore_dir'] = restore_dir
+    end
+
+    it 'parses the manifest from the restore dir' do
+      allow(subject).to receive(:ensure_file!).and_return(true)
+      allow(File).to receive(:read).with(manifest_json).and_return(json)
+      expect(subject.manifest).to eq({"some"=>"json"})
     end
 
     it 'raises an error if the manifest is invalid' do
-      allow(subject).to receive(:shell_out!).and_return(false)
       expect { subject.manifest }
-        .to raise_error(ChefRestore::InvalidManifest,
-                        "#{manifest_path} not found")
+        .to raise_error(
+          ChefBackup::Strategy::TarRestore::InvalidManifest,
+          "#{File.join(restore_dir, 'manifest.json')} not found"
+        )
     end
   end
 
@@ -193,7 +173,7 @@ describe ChefBackup::Strategy::TarRestore do
     let(:restore_dir) { '/tmp/restore_dir' }
 
     before do
-      allow(subject).to receive(:restore_directory).and_return(restore_dir)
+      ChefBackup::Config['restore_dir'] = restore_dir
       allow(subject).to receive(:manifest).and_return(manifest)
       allow(subject).to receive(:shell_out!).and_return(true)
       allow(File).to receive(:directory?).and_return(true)
@@ -228,7 +208,7 @@ describe ChefBackup::Strategy::TarRestore do
     let(:restore_dir) { '/tmp/restore_dir' }
 
     before do
-      allow(subject).to receive(:restore_directory).and_return(restore_dir)
+      ChefBackup::Config['restore_dir'] = restore_dir
       allow(subject).to receive(:manifest).and_return(manifest)
       allow(subject).to receive(:shell_out!).and_return(true)
     end
@@ -236,9 +216,8 @@ describe ChefBackup::Strategy::TarRestore do
     %w(backend standalone).each do |role|
       context "on a #{role}" do
         context 'when a valid database dump is present' do
-          subject do
-            with_path_and_running_config(
-              tarball_path,
+          before do
+            private_chef(
               'role' => role,
               'postgresql' => { 'username' => 'opscode-pgsql' }
             )
@@ -263,9 +242,8 @@ describe ChefBackup::Strategy::TarRestore do
         end
 
         context 'when no database dump is present' do
-          subject do
-            with_path_and_running_config(
-              tarball_path,
+          before do
+            private_chef(
               'role' => role,
               'postgresql' => {
                 'username' => 'opscode-pgsql',
@@ -284,9 +262,8 @@ describe ChefBackup::Strategy::TarRestore do
 
     context 'on a frontend' do
       context 'when a valid database dump is present' do
-        subject do
-          with_path_and_running_config(
-            tarball_path,
+        before do
+          private_chef(
             'role' => 'frontend',
             'postgresql' => { 'username' => 'opscode-pgsql' }
           )
@@ -300,9 +277,8 @@ describe ChefBackup::Strategy::TarRestore do
       end
 
       context 'when no database dump is present' do
-        subject do
-          with_path_and_running_config(
-            tarball_path,
+        before do
+          private_chef(
             'role' => 'frontend',
             'postgresql' => {
               'username' => 'opscode-pgsql',
@@ -316,16 +292,6 @@ describe ChefBackup::Strategy::TarRestore do
           end
         end
       end
-    end
-  end
-
-  describe '.restore_directory' do
-    it 'creates or returns a directory in tmp_dir' do
-      allow(subject).to receive(:tmp_dir).and_return('/tmp/chef_backup')
-      allow(File).to receive(:directory?).and_return(true)
-
-      expect(subject.restore_directory)
-        .to eq(File.join('/tmp/chef_backup', 'chef-backup-2014-12-02-22-46-58'))
     end
   end
 end

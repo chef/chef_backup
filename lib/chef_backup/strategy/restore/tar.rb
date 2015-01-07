@@ -1,5 +1,6 @@
 require 'fileutils'
 require 'pathname'
+require 'forwardable'
 
 module ChefBackup
 module Strategy
@@ -7,20 +8,23 @@ module Strategy
 class TarRestore
   # rubocop:enable IndentationWidth
   include ChefBackup::Helpers
+  include ChefBackup::Exceptions
+  extend Forwardable
 
   attr_accessor :tarball_path
+
+  def_delegators :@log, :log
 
   def initialize(path, config)
     @tarball_path = path
     @log = ChefBackup::Logger.logger(private_chef['backup']['logfile'] || nil)
   end
 
-  def log(msg, level = :info)
-    @log.log(msg, level)
-  end
+#  def log(msg, level = :info)
+#    @log.log(msg, level)
+#  end
 
   def restore
-    unpack_tarball
     stop_chef_server
     restore_services unless frontend?
     restore_configs
@@ -34,15 +38,15 @@ class TarRestore
     log "Restoration Completed!"
   end
 
-  def unpack_tarball
-    ensure_file!(tarball_path, InvalidTarball, "#{tarball_path} not found")
-    log "Expanding tarball: #{tarball_path}"
-    shell_out!("tar zxf #{tarball_path} -C #{restore_directory}")
-  end
+#  def unpack_tarball
+#    ensure_file!(tarball_path, InvalidTarball, "#{tarball_path} not found")
+#    log "Expanding tarball: #{tarball_path}"
+#    shell_out!("tar zxf #{tarball_path} -C #{restore_directory}")
+#  end
 
   def manifest
     @manifest ||= begin
-      manifest = File.expand_path(File.join(restore_directory, 'manifest.json'))
+      manifest = File.expand_path(File.join(ChefBackup::Config['restore_dir'], 'manifest.json'))
       ensure_file!(manifest, InvalidManifest, "#{manifest} not found")
       JSON.parse(File.read(manifest))
     end
@@ -64,7 +68,7 @@ class TarRestore
       return true
     end
 
-    sql_file = File.join(restore_directory,
+    sql_file = File.join(ChefBackup::Config['restore_dir'],
                          "chef_backup-#{manifest['backup_time']}.sql")
     ensure_file!(sql_file, InvalidDatabaseDump, "#{sql_file} not found")
 
@@ -92,7 +96,7 @@ class TarRestore
   end
 
   def restore_data(type, name)
-    source = File.expand_path(File.join(restore_directory,
+    source = File.expand_path(File.join(ChefBackup::Config['restore_dir'],
                                         manifest[type.to_s][name]['data_dir']))
     destination = manifest[type.to_s][name]['data_dir']
     FileUtils.mkdir_p(destination) unless File.directory?(destination)
@@ -101,26 +105,22 @@ class TarRestore
     shell_out!(cmd)
   end
 
-  def ensure_file!(file, exception, message)
-    File.exists?(file) ? true : fail(exception, message)
-  end
-
   def backup_name
     @backup_name ||= Pathname.new(tarball_path).basename.sub_ext('').to_s
   end
 
-  def restore_directory
-    @restore_directory ||= begin
-      dir_name = File.join(tmp_dir, backup_name)
-      # clean restore directory if it exists
-      if File.directory?(dir_name)
-        FileUtils.rm_r(Dir.glob("#{dir_name}/*"))
-      else
-        FileUtils.mkdir_p(dir_name)
-      end
-      dir_name
-    end
-  end
+#  def restore_directory
+#    @restore_directory ||= begin
+#      dir_name = File.join(tmp_dir, backup_name)
+#      # clean restore directory if it exists
+#      if File.directory?(dir_name)
+#        FileUtils.rm_r(Dir.glob("#{dir_name}/*"))
+#      else
+#        FileUtils.mkdir_p(dir_name)
+#      end
+#      dir_name
+#    end
+#  end
 
   def reconfigure_server
     log "Reconfiguring the Chef Server"
