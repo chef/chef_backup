@@ -15,7 +15,7 @@ class TarRestore
 
   def_delegators :@log, :log
 
-  def initialize(path, config)
+  def initialize(path)
     @tarball_path = path
     @log = ChefBackup::Logger.logger(private_chef['backup']['logfile'] || nil)
   end

@@ -32,7 +32,7 @@ module ChefBackup
     # @return [TrueClass, FalseClass] Execute Chef Server restore
     #
     def restore
-      @restore ||= ChefBackup::Strategy.restore(restore_param, restore_strategy)
+      @restore ||= ChefBackup::Strategy.restore(restore_strategy, restore_param)
       @restore.restore
     end
 
@@ -71,7 +71,7 @@ module ChefBackup
     # @return [TrueClass, FalseClass] Is the restore_param an EBS Snapshot ID?
     #
     def ebs_snapshot?
-      # TODO: verify that it's an ebs snapshot id
+      restore_param =~ /^snap-\h{8}$/
     end
 
     #
@@ -119,7 +119,7 @@ module ChefBackup
     #
     def manifest
       @manifest ||= begin
-        file = "#{restore_dir}/manifest.json"
+        file = "#{restore_directory}/manifest.json"
         ensure_file!(file, InvalidTarball, "No manifest found in tarball")
         JSON.parse(File.read(file))
       end
