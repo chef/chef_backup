@@ -2,6 +2,7 @@ require 'spec_helper'
 
 describe ChefBackup::Helpers do
   before do
+    # Test class to include our helpers methods
     class HelperTest; include ChefBackup::Helpers; end
   end
 
@@ -22,7 +23,7 @@ describe ChefBackup::Helpers do
 
     context 'with a specific backup directory' do
       let(:tmp_dir) { '/tmp/pccbak' }
-      before { private_chef({ 'backup' => { 'tmp_dir' => tmp_dir }}) }
+      before { private_chef('backup' => { 'tmp_dir' => tmp_dir }) }
 
       it 'uses the specified directory' do
         allow(FileUtils).to receive(:mkdir_p).and_return([tmp_dir])

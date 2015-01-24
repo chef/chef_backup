@@ -13,8 +13,8 @@ require 'chef_backup/strategy/restore/ebs'
 require 'chef_backup/strategy/restore/object'
 require 'chef_backup/strategy/restore/custom'
 
-# ChefBackup::Strategy factory returns an ChefBackup::Strategy object
 module ChefBackup
+  # ChefBackup::Strategy factory returns an ChefBackup::Strategy object
   module Strategy
     class << self
       def backup(strategy)

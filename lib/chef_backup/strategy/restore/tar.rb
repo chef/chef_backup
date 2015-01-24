@@ -2,9 +2,10 @@ require 'fileutils'
 require 'pathname'
 require 'forwardable'
 
+# rubocop:disable IndentationWidth
 module ChefBackup
 module Strategy
-# rubocop:disable IndentationWidth
+# Basic Tar Restore Strategy
 class TarRestore
   # rubocop:enable IndentationWidth
   include ChefBackup::Helpers
@@ -31,12 +32,13 @@ class TarRestore
     reconfigure_server
     start_chef_server
     cleanup
-    log "Restoration Completed!"
+    log 'Restoration Completed!'
   end
 
   def manifest
     @manifest ||= begin
-      manifest = File.expand_path(File.join(ChefBackup::Config['restore_dir'], 'manifest.json'))
+      manifest = File.expand_path(File.join(ChefBackup::Config['restore_dir'],
+                                            'manifest.json'))
       ensure_file!(manifest, InvalidManifest, "#{manifest} not found")
       JSON.parse(File.read(manifest))
     end
@@ -69,7 +71,7 @@ class TarRestore
            '-d opscode_chef',
            "< #{sql_file}"
           ].join(' ')
-    log "Importing Database dump"
+    log 'Importing Database dump'
     shell_out!(cmd)
   end
 
@@ -100,8 +102,8 @@ class TarRestore
   end
 
   def reconfigure_server
-    log "Reconfiguring the Chef Server"
-    shell_out("chef-server-ctl reconfigure")
+    log 'Reconfiguring the Chef Server'
+    shell_out('chef-server-ctl reconfigure')
   end
 end # ChefBackup::Tar
 end # ChefBackup

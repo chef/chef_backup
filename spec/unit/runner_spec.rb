@@ -6,13 +6,13 @@ describe ChefBackup::Runner do
   let(:backup_name) { 'chef-backup-2014-12-10-20-31-40' }
   let(:restore_dir) { ChefBackup::Config['restore_dir'] }
   let(:manifest_json) { "#{restore_dir}/manifest.json" }
-  let(:manifest) { {'strategy' => 'test_strategy' }}
+  let(:manifest) { { 'strategy' => 'test_strategy' } }
   let(:json) { '{"some":{"nested":{"hash":1}}}' }
 
   subject do
     described_class.new(
       running_config.merge(
-        {'private_chef' => { 'backup' => {'strategy' => 'test'}}}
+        'private_chef' => { 'backup' => { 'strategy' => 'test' } }
       ),
       backup_tarball
     )
@@ -61,33 +61,32 @@ describe ChefBackup::Runner do
   end
 
   describe '.restore_directory' do
-    before do
-      allow(subject).to receive(:tmp_dir).and_return('/tmp')
-      allow(subject).to receive(:backup_name).and_return(backup_name)
+    let(:rest_dir) do
+      ChefBackup::Config['tmp_dir'] = '/tmp/chef_backup'
+      File.join(ChefBackup::Config['tmp_dir'], backup_name)
     end
 
-    around(:each) do
-      if ChefBackup::Config['restore_dir']
-        ChefBackup::Config['restore_dir'] = false
-      end
-
+    before(:each) do
       ChefBackup::Config['tmp_dir'] = '/tmp/chef_backup'
+      allow(subject).to receive(:backup_name).and_return(backup_name)
     end
 
     context 'when the restore directory already exists' do
       before do
-        allow(File).to receive(:directory?).with(restore_dir).and_return(true)
-        allow(Dir)
-          .to receive(:glob).with("#{restore_dir}/*").and_return(%w(a b c))
-        allow(FileUtils).to receive(:rm_r).with(%w(a b c))
+        allow(File).to receive(:directory?).and_return(true)
+        allow(Dir).to receive(:glob).and_return(%w(a b c))
+        allow(FileUtils).to receive(:rm_r).and_return(true)
       end
 
       it 'cleans the restore directory' do
+        # The directory needs to exist but has not been set in the config
+        ChefBackup::Config['restore_dir'] = nil
         expect(FileUtils).to receive(:rm_r).with(%w(a b c))
         subject.restore_directory
       end
 
-      it 'updates the config with the restore dir' do
+      it 'does not create a new directory' do
+        ChefBackup::Config['restore_dir'] = '/tmp/restore_dir'
         subject.restore_directory
         expect(ChefBackup::Config['restore_dir']).to eq(restore_dir)
       end
@@ -95,16 +94,19 @@ describe ChefBackup::Runner do
 
     context 'when the restore directory does not exist' do
       before do
-        allow(File).to receive(:directory?).with(restore_dir).and_return(false)
-        allow(FileUtils).to receive(:anything).and_return(true)
+        allow(File).to receive(:directory?).and_return(false)
+        allow(FileUtils).to receive(:rm_r).and_return(true)
+        allow(FileUtils).to receive(:mkdir_p).and_return(true)
       end
 
       it 'creates a restore directory in the runner tmp_dir' do
-        expect(FileUtils).to receive(:mkdir_p).with(restore_dir)
+        ChefBackup::Config['restore_dir'] = nil
+        expect(FileUtils).to receive(:mkdir_p).with(rest_dir)
         subject.restore_directory
       end
 
       it 'updates the config with the restore dir' do
+        ChefBackup::Config['restore_dir'] = nil
         subject.restore_directory
         expect(ChefBackup::Config['restore_dir']).to eq(restore_dir)
       end
@@ -120,7 +122,7 @@ describe ChefBackup::Runner do
 
     it 'raises an error if the tarball is invalid' do
       allow(File)
-        .to receive(:exists?).with(backup_tarball).and_return(false)
+        .to receive(:exist?).with(backup_tarball).and_return(false)
       expect { subject.unpack_tarball }
         .to raise_error(ChefBackup::Exceptions::InvalidTarball,
                         "#{backup_tarball} not found")
