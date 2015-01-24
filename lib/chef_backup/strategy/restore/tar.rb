@@ -20,10 +20,6 @@ class TarRestore
     @log = ChefBackup::Logger.logger(private_chef['backup']['logfile'] || nil)
   end
 
-#  def log(msg, level = :info)
-#    @log.log(msg, level)
-#  end
-
   def restore
     stop_chef_server
     restore_services unless frontend?
@@ -37,12 +33,6 @@ class TarRestore
     cleanup
     log "Restoration Completed!"
   end
-
-#  def unpack_tarball
-#    ensure_file!(tarball_path, InvalidTarball, "#{tarball_path} not found")
-#    log "Expanding tarball: #{tarball_path}"
-#    shell_out!("tar zxf #{tarball_path} -C #{restore_directory}")
-#  end
 
   def manifest
     @manifest ||= begin
@@ -108,19 +98,6 @@ class TarRestore
   def backup_name
     @backup_name ||= Pathname.new(tarball_path).basename.sub_ext('').to_s
   end
-
-#  def restore_directory
-#    @restore_directory ||= begin
-#      dir_name = File.join(tmp_dir, backup_name)
-#      # clean restore directory if it exists
-#      if File.directory?(dir_name)
-#        FileUtils.rm_r(Dir.glob("#{dir_name}/*"))
-#      else
-#        FileUtils.mkdir_p(dir_name)
-#      end
-#      dir_name
-#    end
-#  end
 
   def reconfigure_server
     log "Reconfiguring the Chef Server"
