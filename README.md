@@ -1,12 +1,14 @@
-# EcBackup
+# ChefBackup
+------------
+[![Build Status](https://travis-ci.org/ryancragun/chef_backup.svg?branch=master)](https://travis-ci.org/ryancragun/chef_backup)
 
-TODO: Write a gem description
+A gem that backs up and restores Chef servers.
 
 ## Installation
 
 Add this line to your application's Gemfile:
 
-    gem 'ec_backup'
+    gem 'chef_backup'
 
 And then execute:
 
@@ -14,15 +16,17 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install ec_backup
+    $ gem install chef_backup
 
 ## Usage
 
-TODO: Write usage instructions here
+```shell
+chef-server-ctl backup
+```
 
 ## Contributing
 
-1. Fork it ( https://github.com/[my-github-username]/ec_backup/fork )
+1. Fork it ( https://github.com/[my-github-username]/chef_backup/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
