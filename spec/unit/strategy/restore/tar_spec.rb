@@ -21,7 +21,7 @@ describe ChefBackup::Strategy::TarRestore do
   let(:configs) { manifest['configs'].keys }
   let(:services) { manifest['services'].keys }
 
-  subject { described_class.new(tarball_path, running_config) }
+  subject { described_class.new(tarball_path) }
 
   describe '.restore' do
     before do

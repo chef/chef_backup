@@ -4,26 +4,6 @@ require 'json'
 require 'tempfile'
 require 'chef/mixin/deep_merge'
 
-#def with_config(option, value)
-#  config = running_config
-#  config['private_chef']['backup'][option] = value
-#  described_class.new(config)
-#end
-#
-#def with_config_hash(hash)
-#  config = running_config
-#  hash.each_pair { |k, v| config['private_chef']['backup'][k] = v }
-#  described_class.new(config)
-#end
-#
-#def with_running_config(hash)
-#  described_class.new(running_config.merge('private_chef' => hash))
-#end
-#
-#def with_path_and_running_config(path, hash)
-#  described_class.new(path, running_config.merge('private_chef' => hash))
-#end
-
 def private_chef(*args)
   Chef::Mixin::DeepMerge.deep_merge!(*args, ChefBackup::Config['private_chef'])
 end
@@ -102,5 +82,5 @@ RSpec.configure do |rspec|
   rspec.order = 'random'
   rspec.expect_with(:rspec) { |c| c.syntax = :expect }
   rspec.before { allow($stdout).to receive(:write) }
-  rspec.after(:each) { reset_config }
+  rspec.before(:each) { reset_config }
 end

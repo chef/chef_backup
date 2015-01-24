@@ -4,7 +4,7 @@ describe ChefBackup::Runner do
   let(:test_strategy) { double('TestBackup', backup: true, restore: true) }
   let(:backup_tarball) { '/tmp/chef-backup-2014-12-10-20-31-40.tgz' }
   let(:backup_name) { 'chef-backup-2014-12-10-20-31-40' }
-  let(:restore_dir) { "/tmp/#{backup_name}" }
+  let(:restore_dir) { ChefBackup::Config['restore_dir'] }
   let(:manifest_json) { "#{restore_dir}/manifest.json" }
   let(:manifest) { {'strategy' => 'test_strategy' }}
   let(:json) { '{"some":{"nested":{"hash":1}}}' }
@@ -35,7 +35,7 @@ describe ChefBackup::Runner do
       allow(subject).to receive(:restore_strategy).and_return('test')
       allow(ChefBackup::Strategy)
         .to receive(:restore)
-        .with(backup_tarball, 'test')
+        .with('test', backup_tarball)
         .and_return(test_strategy)
 
       expect(test_strategy).to receive(:restore).once
@@ -45,8 +45,8 @@ describe ChefBackup::Runner do
 
   describe '.manifest' do
     before do
-      allow(subject).to receive(:restore_dir).and_return(restore_dir)
-      allow(subject).to receive(:ensure_file!)
+      allow(subject).to receive(:restore_directory).and_return(restore_dir)
+      allow(subject).to receive(:ensure_file!).and_return(true)
       allow(File).to receive(:read).with(manifest_json).and_return(json)
     end
 
