@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.summary       = 'A library to backup an Enterprise Chef server'
   spec.description   = spec.summary
   spec.homepage      = 'https://github.com/ryancragun/chef_backup'
-  spec.license       = 'MIT'
+  spec.license       = 'Apachev2'
 
   spec.files         = `git ls-files -z`.split("\x0")
   spec.executables   = spec.files.grep(/^bin/) { |f| File.basename(f) }
@@ -28,5 +28,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'guard-rspec'
   spec.add_development_dependency 'pry-rescue'
   spec.add_development_dependency 'rubocop', '0.28'
-  spec.add_development_dependency 'chef', '12.0.3'
+  spec.add_development_dependency 'chef'
 end
