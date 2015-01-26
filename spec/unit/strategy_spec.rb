@@ -2,9 +2,17 @@ require 'spec_helper'
 
 describe ChefBackup::Strategy do
   before do
-    # Fake test strategies
-    class ChefBackup::Strategy::TestBackup; def initialize(_p = {}) end; end
-    class ChefBackup::Strategy::TestRestore; def initialize(_p = {}) end; end
+    # Backup Tester
+    class ChefBackup::Strategy::TestBackup
+      def initialize(_p = {})
+      end
+    end
+
+    # Restore Tester
+    class ChefBackup::Strategy::TestRestore
+      def initialize(_p = {})
+      end
+    end
   end
 
   after do

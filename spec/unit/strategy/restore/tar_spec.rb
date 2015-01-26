@@ -2,19 +2,28 @@ require 'spec_helper'
 
 describe ChefBackup::Strategy::TarRestore do
   let(:manifest) do
-    {"strategy"=>"tar",
-     "backup_time"=>"2014-12-02-22-46-58",
-     "services"=>
-      {"rabbitmq"=>{"data_dir"=>"/var/opt/opscode/rabbitmq/db"},
-       "opscode-solr4"=>{"data_dir"=>"/var/opt/opscode/opscode-solr4/data"},
-       "redis_lb"=>{"data_dir"=>"/var/opt/opscode/redis_lb/data"},
-       "postgresql"=>{"data_dir"=>"/var/opt/opscode/postgresql/9.2/data", "pg_dump_success"=>true},
-       "bookshelf"=>{"data_dir"=>"/var/opt/opscode/bookshelf/data"}},
-     "configs"=>
-      {"opscode"=>{"data_dir"=>"/etc/opscode"},
-       "opscode-manage"=>{"data_dir"=>"/etc/opscode-manage"},
-       "opscode-reporting"=>{"data_dir"=>"/etc/opscode-reporting"},
-       "opscode-analytics"=>{"data_dir"=>"/etc/opscode-analytics"}}}
+    { 'strategy' =>
+      'tar',
+      'backup_time' => '2014-12-02-22-46-58',
+      'services' => {
+        'rabbitmq' => { 'data_dir' => '/var/opt/opscode/rabbitmq/db' },
+        'opscode-solr4' => {
+          'data_dir' => '/var/opt/opscode/opscode-solr4/data'
+        },
+        'redis_lb' => { 'data_dir' => '/var/opt/opscode/redis_lb/data' },
+        'postgresql' => {
+          'data_dir' => '/var/opt/opscode/postgresql/9.2/data',
+          'pg_dump_success' => true
+        },
+        'bookshelf' => { 'data_dir' => '/var/opt/opscode/bookshelf/data' }
+      },
+      'configs' => {
+        'opscode' => { 'data_dir' => '/etc/opscode' },
+        'opscode-manage' => { 'data_dir' => '/etc/opscode-manage' },
+        'opscode-reporting' => { 'data_dir' => '/etc/opscode-reporting' },
+        'opscode-analytics' => { 'data_dir' => '/etc/opscode-analytics' }
+      }
+    }
   end
 
   let(:tarball_path) { '/var/backups/chef-backup-2014-12-02-22-46-58.tgz' }
@@ -26,7 +35,7 @@ describe ChefBackup::Strategy::TarRestore do
   describe '.restore' do
     before do
       %i(shell_out shell_out! unpack_tarball stop_chef_server
-        start_chef_server reconfigure_server import_db
+         start_chef_server reconfigure_server import_db
       ).each do |method|
         allow(subject).to receive(method).and_return(true)
       end
@@ -41,8 +50,8 @@ describe ChefBackup::Strategy::TarRestore do
           .to receive(:restore_data)
           .with(:services, service)
           .and_return(true)
-
       end
+
       allow(subject).to receive(:tarball_path).and_return(tarball_path)
       allow(subject).to receive(:manifest).and_return(manifest)
 
@@ -157,7 +166,7 @@ describe ChefBackup::Strategy::TarRestore do
     it 'parses the manifest from the restore dir' do
       allow(subject).to receive(:ensure_file!).and_return(true)
       allow(File).to receive(:read).with(manifest_json).and_return(json)
-      expect(subject.manifest).to eq({"some"=>"json"})
+      expect(subject.manifest).to eq('some' => 'json')
     end
 
     it 'raises an error if the manifest is invalid' do
@@ -226,7 +235,7 @@ describe ChefBackup::Strategy::TarRestore do
           it 'imports the database' do
             sql_file = File.join(restore_dir,
                                  "chef_backup-#{manifest['backup_time']}.sql")
-            allow(File).to receive(:exists?).and_return(true)
+            allow(File).to receive(:exist?).and_return(true)
 
             cmd = ['/opt/opscode/embedded/bin/chpst',
                    '-u opscode-pgsql',

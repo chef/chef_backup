@@ -3,19 +3,19 @@ require 'mixlib/shellout'
 require 'chef_backup/config'
 require 'chef_backup/logger'
 
-# Some of these are ported from omnibus-ctl
 # rubocop:disable IndentationWidth
 module ChefBackup
+# Common helper methods that are usefull in many classes
 module Helpers
   # rubocop:enable IndentationWidth
 
   SERVER_ADD_ONS = %w(
-      opscode-manage
-      opscode-reporting
-      opscode-push-jobs-server
-      opscode-analytics
-      chef-ha
-      chef-sync
+    opscode-manage
+    opscode-reporting
+    opscode-push-jobs-server
+    opscode-analytics
+    chef-ha
+    chef-sync
   ).freeze
 
   def private_chef
@@ -34,7 +34,7 @@ module Helpers
   # @return [TrueClass, FalseClass]
   #
   def ensure_file!(file, exception, message)
-    File.exists?(file) ? true : fail(exception, message)
+    File.exist?(file) ? true : fail(exception, message)
   end
 
   def shell_out(*command)

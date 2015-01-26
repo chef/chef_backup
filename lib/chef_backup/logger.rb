@@ -1,6 +1,7 @@
 require 'highline'
 
 module ChefBackup
+  # Basic Logging Class
   class Logger
     def self.logger(logfile = nil)
       @logger = nil if @logger && logfile && @logger.stdout != logfile
@@ -22,10 +23,10 @@ module ChefBackup
       case level
       when :warn
         msg = "WARNING: #{msg}"
-        @stdout.puts( color? ? @highline.color(msg, :yellow) : msg)
+        @stdout.puts(color? ? @highline.color(msg, :yellow) : msg)
       when :error
         msg = "ERROR: #{msg}"
-        @stdout.puts( color? ? @highline.color(msg, :red) : msg)
+        @stdout.puts(color? ? @highline.color(msg, :red) : msg)
       else
         @stdout.puts(msg)
       end

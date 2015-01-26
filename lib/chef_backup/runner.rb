@@ -2,6 +2,7 @@ require 'fileutils'
 require 'pathname'
 
 module ChefBackup
+  # ChefBackup::Runner class initializes the strategy and runs the action
   class Runner
     include ChefBackup::Helpers
     include ChefBackup::Exceptions
@@ -120,7 +121,7 @@ module ChefBackup
     def manifest
       @manifest ||= begin
         file = "#{restore_directory}/manifest.json"
-        ensure_file!(file, InvalidTarball, "No manifest found in tarball")
+        ensure_file!(file, InvalidTarball, 'No manifest found in tarball')
         JSON.parse(File.read(file))
       end
     end

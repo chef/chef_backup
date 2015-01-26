@@ -2,11 +2,11 @@ require 'fileutils'
 require 'json'
 require 'time'
 
-# ChefBackup::Tar class.  Used to backup Standalone and Tier Servers that aren't
-# installed on LVM
 # rubocop:disable IndentationWidth
 module ChefBackup
 module Strategy
+# ChefBackup::Tar class.  Used to backup Standalone and Tier Servers that aren't
+# installed on LVM
 class TarBackup
   # rubocop:enable IndentationWidth
   include ChefBackup::Helpers
@@ -29,8 +29,8 @@ class TarBackup
         if private_chef['backup']['export_dir']
           private_chef['backup']['export_dir']
         else
-          msg = [ "backup['export_dir'] has not been set.",
-                  'defaulting to: /var/opt/chef-backups'].join(' ')
+          msg = ["backup['export_dir'] has not been set.",
+                 'defaulting to: /var/opt/chef-backups'].join(' ')
           log(msg, :warn)
           '/var/opt/chef-backups'
         end
@@ -152,7 +152,6 @@ class TarBackup
     res = shell_out(cmd)
     res
   end
-
 end
 end
 end

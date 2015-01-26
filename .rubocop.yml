@@ -8,6 +8,8 @@ Metrics/PerceivedComplexity:
   Max: 10
 Metrics/MethodLength:
   Max: 40
+Metrics/AbcSize:
+  Max: 25
 AllCops:
   Exclude:
     - 'Guardfile'

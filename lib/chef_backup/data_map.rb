@@ -1,17 +1,14 @@
 require 'time'
 
-# DataMap class to store data about the data we're backing up
 module ChefBackup
+  # DataMap class to store data about the data we're backing up
   class DataMap
-
     class << self
       def data_map
         @data_map ||= new
       end
 
-      def data_map=(data_map)
-        @data_map = data_map
-      end
+      attr_writer :data_map
     end
 
     attr_accessor :strategy, :backup_time, :configs, :services

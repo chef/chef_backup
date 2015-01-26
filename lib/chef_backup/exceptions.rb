@@ -1,5 +1,6 @@
 module ChefBackup
   module Exceptions
+    # ChefBackup Exceptions
     class ChefBackupException < StandardError; end
     class InvalidTarball < ChefBackupException; end
     class InvalidSnapshot < ChefBackupException; end

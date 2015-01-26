@@ -135,7 +135,7 @@ describe ChefBackup::Strategy::TarBackup do
       allow(subject).to receive(:tmp_dir).and_return(tmp_dir)
       allow(subject).to receive(:backup_time).and_return(backup_time)
       allow(subject).to receive(:shell_out!).with(dump_cmd).and_return(true)
-      private_chef('postgresql' => {'username' => 'opscode-pgsql'})
+      private_chef('postgresql' => { 'username' => 'opscode-pgsql' })
       subject.data_map.add_service('postgresql', '/data/dir')
     end
 

@@ -3,6 +3,7 @@ require 'json'
 require 'forwardable'
 
 module ChefBackup
+  # ChefBackup Global Config
   class Config
     extend Forwardable
 
@@ -24,11 +25,11 @@ module ChefBackup
       end
 
       def [](key)
-        self.config[key]
+        config[key]
       end
 
       def []=(key, value)
-        self.config[key] = value
+        config[key] = value
       end
 
       #
@@ -52,6 +53,5 @@ module ChefBackup
     end
 
     def_delegators :@config, :[], :[]=
-
   end
 end
