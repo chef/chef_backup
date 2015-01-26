@@ -117,6 +117,7 @@ class TarBackup
     if backend?
       stop_chef_server(except: [:keepalived, :postgresql]) unless online?
       dump_db
+      stop_service(:postgresql) unless online?
     end
     write_manifest
     create_tarball
