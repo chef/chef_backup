@@ -1,3 +1,6 @@
+require 'simplecov'
+SimpleCov.start
+
 require 'chef_backup'
 require 'bundler/setup'
 require 'json'
