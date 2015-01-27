@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'chef/mixin/deep_merge'
+require_relative 'shared_examples/backup'
 
 describe ChefBackup::Strategy::TarBackup do
   set_common_variables
@@ -22,99 +23,62 @@ describe ChefBackup::Strategy::TarBackup do
     context 'on a frontend' do
       before { private_chef('role' => 'frontend') }
 
-      it 'doesnt stop any services' do
-        expect(subject).to_not receive(:stop_service)
-        subject.backup
+      it_behaves_like 'a tar based backup'
+      it_behaves_like 'a tar based frontend'
+    end
+
+    context 'on a backend' do
+      before { private_chef('role' => 'backend') }
+
+      context 'during an online backup' do
+        before do
+          private_chef('role' => 'backend', 'backup' => { 'mode' => 'online' })
+        end
+
+        it_behaves_like 'a tar based backup'
+        it_behaves_like 'a tar based online backend'
       end
 
-      it 'doesnt dump the db' do
-        expect(subject).to_not receive(:dump_db)
-        subject.backup
+      context 'during an offline backup' do
+        it_behaves_like 'a tar based backup'
+        it_behaves_like 'a tar based offline backend'
+      end
+
+      context 'when no mode is configured' do
+        before do
+          private_chef('role' => 'backend', 'backup' => { 'mode' => nil })
+        end
+
+        it_behaves_like 'a tar based backup'
+        it_behaves_like 'a tar based offline backend'
       end
     end
 
-    %w(backend standalone).each do |role|
-      context "on a #{role}" do
-        context 'during an online backup' do
-          before do
-            private_chef('role' => role, 'backup' => { 'mode' => 'online' })
-          end
+    context 'on a standlone' do
+      before { private_chef('role' => 'standalone') }
 
-          it "doesn't start any services" do
-            expect(subject).to_not receive(:start_service)
-            subject.backup
-          end
-
-          it "doesn't stop any services" do
-            expect(subject).to_not receive(:stop_service)
-            subject.backup
-          end
-
-          it 'dumps the db' do
-            expect(subject).to receive(:dump_db).once
-            subject.backup
-          end
+      context 'during an online backup' do
+        before do
+          private_chef('role' => 'standalone',
+                       'backup' => { 'mode' => 'online' })
         end
 
-        [
-          {
-            context: 'when no mode is configured',
-            config: { 'role' => role }
-          },
-          { context: 'during an offline backup',
-            config: { 'role' => role, 'backup' => { 'mode' => 'offline' } }
-          }
-        ].each do |mode|
-          context mode[:context] do
-            before { private_chef(mode[:config]) }
-
-            it 'stops all services besides keepalived and postgres' do
-              expect(subject).to receive(:stop_chef_server).once
-
-              %w(postgresql keepalived).each do |service|
-                expect(subject).to_not receive(:stop_service).with(service)
-              end
-
-              subject.backup
-            end
-
-            it 'starts all the services again' do
-              expect(subject).to receive(:start_chef_server).at_least(:once)
-              subject.backup
-            end
-
-            it 'dumps the db' do
-              expect(subject).to receive(:dump_db).once
-              subject.backup
-            end
-          end
-        end
+        it_behaves_like 'a tar based backup'
+        it_behaves_like 'a tar based online backend'
       end
-    end
 
-    %w(frontend backend standalone).each do |node|
-      context "on a #{node}" do
-        before { private_chef('role' => node) }
+      context 'during an offline backup' do
+        it_behaves_like 'a tar based backup'
+        it_behaves_like 'a tar based offline backend'
+      end
 
-        it 'populates the data map with services and configs' do
-          expect(subject).to receive(:populate_data_map).once
-          subject.backup
+      context 'when no mode is configured' do
+        before do
+          private_chef('role' => 'standalone', 'backup' => { 'mode' => nil })
         end
 
-        it 'creates a backup manifest' do
-          expect(subject).to receive(:write_manifest).once
-          subject.backup
-        end
-
-        it 'creates a tarball of the backup' do
-          expect(subject).to receive(:create_tarball).once
-          subject.backup
-        end
-
-        it 'cleans up the temp directory' do
-          expect(subject).to receive(:cleanup).at_least(:once)
-          subject.backup
-        end
+        it_behaves_like 'a tar based backup'
+        it_behaves_like 'a tar based offline backend'
       end
     end
   end
@@ -128,7 +92,7 @@ describe ChefBackup::Strategy::TarBackup do
       ].join(' ')
     end
 
-    let(:tmp_dir) { '/tmp/fuckingshit' }
+    let(:tmp_dir) { '/tmp/notaswear' }
     let(:backup_time) { Time.now }
 
     before do
