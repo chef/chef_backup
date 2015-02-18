@@ -11,14 +11,13 @@ module ChefBackup
 
     #
     # @param running_config [Hash] A hash of the private-chef-running.json
-    # @param restore_param [String] A path to tarball or Block Device ID
+    #   or the CLI args for a restore
     #
     # @return [ChefBackup::Runner]
     #
-    def initialize(running_config, restore_param = nil)
+    def initialize(running_config)
       ChefBackup::Config.config = running_config
       ChefBackup::Logger.logger(private_chef['backup']['logfile'] || nil)
-      @restore_param = restore_param
     end
 
     #
@@ -41,7 +40,15 @@ module ChefBackup
     # @return [String] String name of the configured backup strategy
     #
     def backup_strategy
-      private_chef['backup']['strategy']
+      config['private_chef']['backup']['strategy']
+    end
+
+    #
+    # @return [String] String of the restore parameter. eg: EBS snapshot ID
+    #   or a path to a tarball
+    #
+    def restore_param
+      config['restore_param']
     end
 
     #
@@ -103,7 +110,7 @@ module ChefBackup
     # @return [String] A path to the restore directory
     #
     def restore_directory
-      ChefBackup::Config['restore_dir'] ||= begin
+      config['restore_dir'] ||= begin
         dir_name = File.join(tmp_dir, backup_name)
         if File.directory?(dir_name)
           # clean restore directory if it exists

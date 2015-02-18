@@ -8,15 +8,16 @@ describe ChefBackup::Runner do
   let(:manifest_json) { "#{restore_dir}/manifest.json" }
   let(:manifest) { { 'strategy' => 'test_strategy' } }
   let(:json) { '{"some":{"nested":{"hash":1}}}' }
-
-  subject do
-    described_class.new(
-      running_config.merge(
-        'private_chef' => { 'backup' => { 'strategy' => 'test' } }
-      ),
-      backup_tarball
-    )
+  let(:runner_config) do
+    {
+      'tmp_dir' => '/tmp/runner_spec_tmp_dir',
+      'restore_param' => backup_tarball,
+      'agree_to_cleanse' => 'yes',
+      'private_chef' => { 'backup' => { 'strategy' => 'test' } }
+    }
   end
+
+  subject { described_class.new(runner_config) }
 
   describe '.backup' do
     it 'initializes a ChefBackup::Strategy and calls .backup' do

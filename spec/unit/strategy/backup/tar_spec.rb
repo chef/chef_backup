@@ -8,13 +8,19 @@ describe ChefBackup::Strategy::TarBackup do
   subject { described_class.new }
 
   before do
+    use_default_running_config
     allow(subject).to receive(:tmp_dir).and_return(tmp_dir)
     allow(subject).to receive(:backup_time).and_return(backup_time)
   end
 
   describe '.backup' do
     before do
-      noop_external_methods_except(:backup)
+      %i(write_manifest dump_db stop_service create_tarball cleanup
+         start_service export_tarball
+      ).each do |method|
+        allow(subject).to receive(method).and_return(true)
+      end
+
       allow(subject).to receive(:enabled_services).and_return(enabled_services)
       allow(subject).to receive(:all_services).and_return(all_services)
       allow(subject).to receive(:dump_db).and_return(true)
@@ -134,7 +140,6 @@ describe ChefBackup::Strategy::TarBackup do
 
   describe '.create_tarball' do
     before do
-      noop_external_methods_except(:create_tarball)
       allow(subject).to receive(:data_map).and_return(data_map)
       allow(Dir).to receive(:[]).and_return(%w(sql.sql manifest.json))
     end
@@ -147,6 +152,7 @@ describe ChefBackup::Strategy::TarBackup do
         Dir["#{tmp_dir}/*"].map { |f| File.basename(f) }.join(' ')
       ].join(' ').strip
 
+      allow(subject).to receive(:shell_out).with(cmd, cdw: tmp_dir)
       expect(subject).to receive(:shell_out).with(cmd, cwd: tmp_dir)
       subject.create_tarball
     end
@@ -154,7 +160,6 @@ describe ChefBackup::Strategy::TarBackup do
 
   describe '.export_tarball' do
     before do
-      noop_external_methods_except(:export_tarball)
       allow(subject).to receive(:export_dir).and_return('/mnt/chef-backups')
     end
 
@@ -162,6 +167,7 @@ describe ChefBackup::Strategy::TarBackup do
       cmd = "rsync -chaz #{tmp_dir}/chef-backup-#{backup_time}.tgz"
       cmd << " #{export_dir}/"
 
+      allow(subject).to receive(:shell_out).with(cmd)
       expect(subject).to receive(:shell_out).with(cmd)
       subject.export_tarball
     end
@@ -255,18 +261,6 @@ describe ChefBackup::Strategy::TarBackup do
       it "doesn't populate the data map with the services" do
         expect(subject.data_map).to_not receive(:add_service)
       end
-    end
-  end
-
-  describe '.cleanup' do
-    before do
-      noop_external_methods_except(:cleanup)
-      allow(subject).to receive(:tmp_dir).and_return(tmp_dir)
-    end
-
-    it 'cleans up all items in the temp directory' do
-      expect(FileUtils).to receive(:rm_r).with(tmp_dir)
-      subject.cleanup
     end
   end
 end

@@ -7,12 +7,36 @@ require 'json'
 require 'tempfile'
 require 'chef/mixin/deep_merge'
 
+# Merge attributes into existing running_config
 def private_chef(*args)
   Chef::Mixin::DeepMerge.deep_merge!(*args, ChefBackup::Config['private_chef'])
 end
 
-def reset_config
+# Overwrite config with given attributes
+def private_chef!(args = {})
+  ChefBackup::Config.config = args
+end
+
+# Merge attributes into existing cli_args
+def cli_args(*args)
+  Chef::Mixin::DeepMerge.deep_merge!(*args, ChefBackup::Config.config)
+end
+
+# Overwrite config with given CLI args
+def cli_args!(args)
+  ChefBackup::Config.config = args
+end
+
+def use_default_running_config
   ChefBackup::Config.config = running_config
+end
+
+def use_default_cli_args
+  ChefBackup::Config.config = cli_args
+end
+
+def clear_config
+  ChefBackup::Config.config = {}
 end
 
 def set_common_variables
@@ -61,22 +85,13 @@ def running_config
   @config.dup
 end
 
-# TODO: These NOOP methods are nasty hacks.  Need to refactor the hell out of
-# this.
-def noop_external_methods(methods = external_methods_as_symbols)
-  methods.each { |symbol| allow(subject).to receive(symbol).and_return(true) }
-end
-
-def noop_external_methods_except(methods)
-  methods = [methods] unless methods.is_a?(Array)
-  noop_external_methods((external_methods_as_symbols - methods))
-end
-
-def external_methods_as_symbols
-  %i(
-    shell_out! shell_out start_service stop_service service_enabled?
-    backup_opscode_config create_tarball write_manifest cleanup export_tarball
-  )
+def cli_args
+  {
+    'tmp_dir' => '/tmp/chef_backup/tmp_dir',
+    'agree_to_cleanse' => nil,
+    'restore_arg' => '/tmp/chef_backup/backup.tgz',
+    'restore_dir' => File.join('/tmp/chef_backup/tmp_dir', 'restore_dir')
+  }
 end
 
 RSpec.configure do |rspec|
@@ -85,5 +100,4 @@ RSpec.configure do |rspec|
   rspec.order = 'random'
   rspec.expect_with(:rspec) { |c| c.syntax = :expect }
   rspec.before { allow($stdout).to receive(:write) }
-  rspec.before(:each) { reset_config }
 end
