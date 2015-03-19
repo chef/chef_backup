@@ -1,6 +1,7 @@
 require 'fileutils'
 require 'pathname'
 require 'forwardable'
+require 'chef/mixin/deep_merge'
 
 # rubocop:disable IndentationWidth
 module ChefBackup
@@ -10,6 +11,7 @@ class TarRestore
   # rubocop:enable IndentationWidth
   include ChefBackup::Helpers
   include ChefBackup::Exceptions
+  include Chef::Mixin::DeepMerge
   extend Forwardable
 
   attr_accessor :tarball_path
@@ -22,14 +24,14 @@ class TarRestore
   end
 
   def restore
-    stop_chef_server
-    restore_services unless frontend?
+    log 'Restoring Chef Server from backup'
+    cleanse_chef_server(config['agree_to_cleanse'])
     restore_configs
-    if restore_db_dump?
-      start_service(:postgresql)
-      import_db
-    end
+    restore_services unless frontend?
+    touch_sentinel
     reconfigure_server
+    update_config
+    import_db if restore_db_dump?
     start_chef_server
     cleanup
     log 'Restoration Completed!'
@@ -45,29 +47,21 @@ class TarRestore
   end
 
   def restore_db_dump?
-    if manifest.key?('services')
-      manifest['services']['postgresql']['pg_dump_success'] && !frontend?
-    else
-      false
-    end
+    manifest['services']['postgresql']['pg_dump_success'] && !frontend?
   rescue NoMethodError
     false
   end
 
   def import_db
-    if frontend?
-      log('Skipping DB dump import on FE', :warn)
-      return true
-    end
-
+    start_service('postgresql')
     sql_file = File.join(ChefBackup::Config['restore_dir'],
                          "chef_backup-#{manifest['backup_time']}.sql")
     ensure_file!(sql_file, InvalidDatabaseDump, "#{sql_file} not found")
 
     cmd = ['/opt/opscode/embedded/bin/chpst',
-           "-u #{private_chef['postgresql']['username']}",
+           "-u #{manifest['services']['postgresql']['username']}",
            '/opt/opscode/embedded/bin/psql',
-           "-U #{private_chef['postgresql']['username']}",
+           "-U #{manifest['services']['postgresql']['username']}",
            '-d opscode_chef',
            "< #{sql_file}"
           ].join(' ')
@@ -87,8 +81,15 @@ class TarRestore
     end
   end
 
+  def touch_sentinel
+    dir = '/var/opt/opscode'
+    sentinel = File.join(dir, 'bootstrapped')
+    FileUtils.mkdir_p(dir) unless File.directory?(dir)
+    File.open(sentinel, 'w') { |file| file.write 'bootstrapped!' }
+  end
+
   def restore_data(type, name)
-    source = File.expand_path(File.join(ChefBackup::Config['restore_dir'],
+    source = File.expand_path(File.join(config['restore_dir'],
                                         manifest[type.to_s][name]['data_dir']))
     destination = manifest[type.to_s][name]['data_dir']
     FileUtils.mkdir_p(destination) unless File.directory?(destination)
@@ -105,6 +106,20 @@ class TarRestore
     log 'Reconfiguring the Chef Server'
     shell_out('chef-server-ctl reconfigure')
   end
-end # ChefBackup::Tar
+
+  def cleanse_chef_server(agree)
+    log 'Cleaning up any old files'
+    shell_out!("chef-server-ctl cleanse #{agree || ''}")
+  end
+
+  def running_config
+    @running_config ||=
+      JSON.parse(File.read('/etc/opscode/chef-server-running.json')) || {}
+  end
+
+  def update_config
+    ChefBackup::Config.config = deep_merge(config.dup, running_config)
+  end
+end # Tar
+end # Strategy
 end # ChefBackup
-end

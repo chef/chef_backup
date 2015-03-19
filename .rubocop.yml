@@ -1,5 +1,7 @@
 Style/ClassAndModuleChildren:
   Enabled: false
+Style/GuardClause:
+  Enabled: false
 Metrics/ClassLength:
   Max: 200
 Metrics/CyclomaticComplexity:

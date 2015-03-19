@@ -19,7 +19,11 @@ module Helpers
   ).freeze
 
   def private_chef
-    ChefBackup::Config['private_chef']
+    config['private_chef']
+  end
+
+  def config
+    ChefBackup::Config
   end
 
   def log(message, level = :info)
@@ -125,12 +129,14 @@ module Helpers
   end
 
   def tmp_dir
-    ChefBackup::Config['tmp_dir'] ||= begin
-      if private_chef['backup'].key?('tmp_dir') &&
-         private_chef['backup']['tmp_dir']
-        FileUtils.mkdir_p(private_chef['backup']['tmp_dir']).first
+    @tmp_dir ||= begin
+      dir = safe_key { config['tmp_dir'] } ||
+            safe_key { private_chef['backup']['tmp_dir'] }
+      if dir
+        FileUtils.mkdir_p(dir) unless File.directory?(dir)
+        dir
       else
-        Dir.mktmpdir('pcc_backup')
+        Dir.mktmpdir('chef_backup')
       end
     end
   end
@@ -140,6 +146,14 @@ module Helpers
     FileUtils.rm_r(tmp_dir)
   rescue Errno::ENOENT
     true
+  end
+
+  private
+
+  def safe_key
+    yield
+  rescue NameError
+    nil
   end
 end
 end

@@ -1,9 +1,9 @@
 require 'spec_helper'
+require_relative 'shared_examples/restore'
 
 describe ChefBackup::Strategy::TarRestore do
   let(:manifest) do
-    { 'strategy' =>
-      'tar',
+    { 'strategy' => 'tar',
       'backup_time' => '2014-12-02-22-46-58',
       'services' => {
         'rabbitmq' => { 'data_dir' => '/var/opt/opscode/rabbitmq/db' },
@@ -13,7 +13,8 @@ describe ChefBackup::Strategy::TarRestore do
         'redis_lb' => { 'data_dir' => '/var/opt/opscode/redis_lb/data' },
         'postgresql' => {
           'data_dir' => '/var/opt/opscode/postgresql/9.2/data',
-          'pg_dump_success' => true
+          'pg_dump_success' => pg_dump_success,
+          'username' => 'opscode-pgsql'
         },
         'bookshelf' => { 'data_dir' => '/var/opt/opscode/bookshelf/data' }
       },
@@ -26,16 +27,21 @@ describe ChefBackup::Strategy::TarRestore do
     }
   end
 
+  let(:pg_dump_success) { true }
   let(:tarball_path) { '/var/backups/chef-backup-2014-12-02-22-46-58.tgz' }
   let(:configs) { manifest['configs'].keys }
   let(:services) { manifest['services'].keys }
+  let(:restore_dir) { ChefBackup::Config['restore_dir'] }
 
   subject { described_class.new(tarball_path) }
 
+  before(:each) { use_default_cli_args }
+
   describe '.restore' do
     before do
-      %i(shell_out shell_out! unpack_tarball stop_chef_server
-         start_chef_server reconfigure_server import_db
+      %i(shell_out shell_out! unpack_tarball stop_chef_server ensure_file!
+         start_chef_server reconfigure_server cleanse_chef_server
+         update_config import_db touch_sentinel
       ).each do |method|
         allow(subject).to receive(method).and_return(true)
       end
@@ -54,114 +60,73 @@ describe ChefBackup::Strategy::TarRestore do
 
       allow(subject).to receive(:tarball_path).and_return(tarball_path)
       allow(subject).to receive(:manifest).and_return(manifest)
-
-      ChefBackup::Config['restore_dir'] = '/tmp/chef_backup/restore'
     end
+
+    it_behaves_like 'a tar based restore'
 
     context 'on a frontend' do
       before do
-        private_chef(
-          'role' => 'frontend',
-          'backup' => {}
-        )
+        allow(subject).to receive(:frontend?).and_return(true)
       end
 
-      it 'does not restore backend service state' do
-        expect(subject).to_not receive(:restore_data).with(:services, anything)
-        expect(subject).to_not receive(:import_db)
-        subject.restore
+      it_behaves_like 'a tar based frontend restore'
+    end
+
+    context 'on a backend' do
+      before do
+        allow(subject).to receive(:frontend?).and_return(false)
+      end
+
+      it_behaves_like 'a tar based backend restore'
+
+      context 'when a db dump is present' do
+        before do
+          allow(subject).to receive(:restore_db_dump?).and_return(true)
+          allow(subject)
+            .to receive(:start_service).with(:postgresql).and_return(true)
+          allow(subject).to receive(:import_db).and_return(true)
+        end
+
+        it_behaves_like 'a tar based backend restore with db dump'
+      end
+
+      context 'when a db dump is not present' do
+        before do
+          allow(subject).to receive(:restore_db_dump?).and_return(false)
+        end
+
+        it_behaves_like 'a tar based backend restore without db dump'
       end
     end
 
-    %w(backend standalone).each do |role|
-      context "on a #{role}" do
-        before do
-          private_chef(
-            'role' => role,
-            'backup' => {}
-          )
-        end
-
-        it 'restores the stateful services' do
-          services.each do |service|
-            expect(subject)
-              .to receive(:restore_data)
-              .with(:services, service)
-              .once
-          end
-          subject.restore
-        end
-
-        context 'when backup includes a postgresql db dump' do
-          # The default manifest has pg_dump_success = true
-          it 'restores the db dump' do
-            allow(subject).to receive(:import_db).and_return(true)
-            expect(subject).to receive(:import_db)
-            subject.restore
-          end
-        end
-
-        context "when backup doesn't include a postgresql db dump" do
-          it 'does not try to import a db dump' do
-            man = manifest
-            man['services']['postgresql']['pg_dump_success'] = nil
-            allow(subject).to receive(:manifest).and_return(man)
-            allow(subject).to receive(:import_db).and_return(true)
-            expect(subject).to_not receive(:import_db)
-            subject.restore
-          end
-        end
+    context 'on a standalone' do
+      before do
+        allow(subject).to receive(:frontend?).and_return(false)
       end
-    end
 
-    %w(frontend backend standalone).each do |role|
-      context "on a #{role}" do
+      it_behaves_like 'a tar based backend restore'
+
+      context 'when a db dump is present' do
         before do
-          private_chef(
-            'role' => role,
-            'backup' => {}
-          )
+          allow(subject).to receive(:restore_db_dump?).and_return(true)
         end
 
-        it 'stops the server' do
-          expect(subject).to receive(:stop_chef_server).once
-          subject.restore
+        it_behaves_like 'a tar based backend restore with db dump'
+      end
+
+      context 'when a db dump is not present' do
+        before do
+          allow(subject).to receive(:restore_db_dump?).and_return(false)
         end
 
-        it 'restores the configs' do
-          configs.each do |config|
-            expect(subject)
-              .to receive(:restore_data).with(:configs, config).once
-          end
-          subject.restore
-        end
-
-        it 'reconfigures the server' do
-          expect(subject).to receive(:reconfigure_server).once
-          subject.restore
-        end
-
-        it 'starts the server' do
-          expect(subject).to receive(:start_chef_server).once
-          subject.restore
-        end
-
-        it 'cleans up the temp directory' do
-          expect(subject).to receive(:cleanup).once
-          subject.restore
-        end
+        it_behaves_like 'a tar based backend restore without db dump'
       end
     end
   end
 
   describe '.manifest' do
-    let(:restore_dir) { '/tmp/chef_backup/restore' }
     let(:json) { "{\"some\":\"json\"}" }
     let(:manifest_json) { File.join(restore_dir, 'manifest.json') }
-
-    before do
-      ChefBackup::Config['restore_dir'] = restore_dir
-    end
 
     it 'parses the manifest from the restore dir' do
       allow(subject).to receive(:ensure_file!).and_return(true)
@@ -179,8 +144,6 @@ describe ChefBackup::Strategy::TarRestore do
   end
 
   describe '.restore_data' do
-    let(:restore_dir) { '/tmp/restore_dir' }
-
     before do
       ChefBackup::Config['restore_dir'] = restore_dir
       allow(subject).to receive(:manifest).and_return(manifest)
@@ -214,93 +177,62 @@ describe ChefBackup::Strategy::TarRestore do
   end
 
   describe '.import_db' do
-    let(:restore_dir) { '/tmp/restore_dir' }
-
     before do
-      ChefBackup::Config['restore_dir'] = restore_dir
       allow(subject).to receive(:manifest).and_return(manifest)
       allow(subject).to receive(:shell_out!).and_return(true)
+      allow(subject).to receive(:running_config).and_return(running_config)
+      allow(subject)
+        .to receive(:start_service).with('postgresql').and_return(true)
     end
 
-    %w(backend standalone).each do |role|
-      context "on a #{role}" do
-        context 'when a valid database dump is present' do
-          before do
-            private_chef(
-              'role' => role,
-              'postgresql' => { 'username' => 'opscode-pgsql' }
-            )
-          end
-
-          it 'imports the database' do
-            sql_file = File.join(restore_dir,
-                                 "chef_backup-#{manifest['backup_time']}.sql")
-            allow(File).to receive(:exist?).and_return(true)
-
-            cmd = ['/opt/opscode/embedded/bin/chpst',
-                   '-u opscode-pgsql',
-                   '/opt/opscode/embedded/bin/psql',
-                   '-U opscode-pgsql',
-                   '-d opscode_chef',
-                   "< #{sql_file}"
-                  ].join(' ')
-
-            expect(subject).to receive(:shell_out!).with(cmd)
-            subject.import_db
-          end
-        end
-
-        context 'when no database dump is present' do
-          before do
-            private_chef(
-              'role' => role,
-              'postgresql' => {
-                'username' => 'opscode-pgsql',
-                'pg_dump_success' => false
-              }
-            )
-
-            it 'does not attempt to import the dump' do
-              expect(subject).to_not receive(:shell_out!).with(/psql/)
-              subject.import_db
-            end
-          end
-        end
+    context 'without a db dump' do
+      it 'raises an exception' do
+        expect { subject.import_db }
+          .to raise_error(ChefBackup::Exceptions::InvalidDatabaseDump)
       end
     end
 
-    context 'on a frontend' do
-      context 'when a valid database dump is present' do
-        before do
-          private_chef(
-            'role' => 'frontend',
-            'postgresql' => { 'username' => 'opscode-pgsql' }
-          )
-        end
-
-        it 'does not attempt to import the dump' do
-          allow(File).to receive(:exists?).and_return(true)
-          expect(subject).to_not receive(:shell_out!).with(/psql/)
-          subject.import_db
-        end
+    context 'with a db dump' do
+      let(:db_sql) do
+        File.join(restore_dir, "chef_backup-#{manifest['backup_time']}.sql")
       end
 
-      context 'when no database dump is present' do
-        before do
-          private_chef(
-            'role' => 'frontend',
-            'postgresql' => {
-              'username' => 'opscode-pgsql',
-              'pg_dump_success' => false
-            }
-          )
-
-          it 'does not attempt to import the dump' do
-            expect(subject).to_not receive(:shell_out!).with(/psql/)
-            subject.import_db
-          end
-        end
+      let(:import_cmd) do
+        ['/opt/opscode/embedded/bin/chpst -u opscode-pgsql',
+         '/opt/opscode/embedded/bin/psql -U opscode-pgsql',
+         "-d opscode_chef < #{db_sql}"
+        ].join(' ')
       end
+
+      before do
+        allow(subject)
+          .to receive(:ensure_file!)
+          .with(db_sql,
+                ChefBackup::Exceptions::InvalidDatabaseDump,
+                "#{db_sql} not found")
+          .and_return(true)
+      end
+
+      it 'imports the database' do
+        expect(subject).to receive(:shell_out!).with(import_cmd)
+        subject.import_db
+      end
+    end
+  end
+
+  describe '.touch_sentinel' do
+    let(:file) { double('File', write: true) }
+    let(:file_dir) { '/var/opt/opscode' }
+    let(:file_path) { File.join(file_dir, 'bootstrapped') }
+
+    before do
+      allow(FileUtils).to receive(:mkdir_p).with(file_dir).and_return(true)
+      allow(File).to receive(:open).with(file_path, 'w').and_yield(file)
+    end
+
+    it 'touches the bootstrap sentinel file' do
+      expect(file).to receive(:write).with('bootstrapped!')
+      subject.touch_sentinel
     end
   end
 end

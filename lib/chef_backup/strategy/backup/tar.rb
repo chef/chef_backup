@@ -46,15 +46,17 @@ class TarBackup
   #
   def dump_db
     return true unless pg_dump?
+    pg_user = private_chef['postgresql']['username']
     sql_file = "#{tmp_dir}/chef_backup-#{backup_time}.sql"
     cmd = ['/opt/opscode/embedded/bin/chpst',
-           "-u #{private_chef['postgresql']['username']}",
+           "-u #{pg_user}",
            '/opt/opscode/embedded/bin/pg_dumpall',
            "> #{sql_file}"
           ].join(' ')
     log "Dumping Postgresql database to #{sql_file}"
     shell_out!(cmd)
     data_map.services['postgresql']['pg_dump_success'] = true
+    data_map.services['postgresql']['username'] = pg_user
     true
   end
 
@@ -66,6 +68,11 @@ class TarBackup
 
     config_directories.each do |config|
       data_map.add_config(config, "/etc/#{config}")
+    end
+
+    # Don't forget the upgrades!
+    if private_chef.key?('upgrades')
+      data_map.add_service('upgrades', private_chef['upgrades']['dir'])
     end
   end
 
