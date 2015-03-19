@@ -6,11 +6,6 @@ shared_examples 'a tar based restore' do
     subject.restore
   end
 
-  it 'stops the server' do
-    expect(subject).to receive(:stop_chef_server).once
-    subject.restore
-  end
-
   it 'restores the configs' do
     configs.each do |config|
       expect(subject).to receive(:restore_data).with(:configs, config).once
@@ -18,13 +13,18 @@ shared_examples 'a tar based restore' do
     subject.restore
   end
 
-  it 'updates the config' do
-    expect(subject).to receive(:update_config)
+  it 'touches the bootstrap sentinel file' do
+    expect(subject).to receive(:touch_sentinel).once
     subject.restore
   end
 
   it 'reconfigures the server' do
     expect(subject).to receive(:reconfigure_server).once
+    subject.restore
+  end
+
+  it 'updates the config' do
+    expect(subject).to receive(:update_config).once
     subject.restore
   end
 
@@ -69,11 +69,6 @@ shared_examples 'a tar based backend restore' do
 end
 
 shared_examples 'a tar based backend restore with db dump' do
-  it 'starts postgres' do
-    expect(subject).to receive(:start_service).with(:postgresql)
-    subject.restore
-  end
-
   it 'restores the db dump' do
     expect(subject).to receive(:import_db)
     subject.restore

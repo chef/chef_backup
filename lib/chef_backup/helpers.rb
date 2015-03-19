@@ -131,7 +131,7 @@ module Helpers
   def tmp_dir
     @tmp_dir ||= begin
       dir = safe_key { config['tmp_dir'] } ||
-        safe_key { private_chef['backup']['tmp_dir'] }
+            safe_key { private_chef['backup']['tmp_dir'] }
       if dir
         FileUtils.mkdir_p(dir) unless File.directory?(dir)
         dir

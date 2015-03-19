@@ -13,7 +13,8 @@ describe ChefBackup::Strategy::TarRestore do
         'redis_lb' => { 'data_dir' => '/var/opt/opscode/redis_lb/data' },
         'postgresql' => {
           'data_dir' => '/var/opt/opscode/postgresql/9.2/data',
-          'pg_dump_success' => pg_dump_success
+          'pg_dump_success' => pg_dump_success,
+          'username' => 'opscode-pgsql'
         },
         'bookshelf' => { 'data_dir' => '/var/opt/opscode/bookshelf/data' }
       },
@@ -40,7 +41,7 @@ describe ChefBackup::Strategy::TarRestore do
     before do
       %i(shell_out shell_out! unpack_tarball stop_chef_server ensure_file!
          start_chef_server reconfigure_server cleanse_chef_server
-         update_config import_db
+         update_config import_db touch_sentinel
       ).each do |method|
         allow(subject).to receive(method).and_return(true)
       end
@@ -90,7 +91,6 @@ describe ChefBackup::Strategy::TarRestore do
       end
 
       context 'when a db dump is not present' do
-
         before do
           allow(subject).to receive(:restore_db_dump?).and_return(false)
         end
@@ -181,7 +181,8 @@ describe ChefBackup::Strategy::TarRestore do
       allow(subject).to receive(:manifest).and_return(manifest)
       allow(subject).to receive(:shell_out!).and_return(true)
       allow(subject).to receive(:running_config).and_return(running_config)
-      private_chef('postgresql' => {'username' => 'opscode-pgsql'})
+      allow(subject)
+        .to receive(:start_service).with('postgresql').and_return(true)
     end
 
     context 'without a db dump' do
@@ -216,6 +217,22 @@ describe ChefBackup::Strategy::TarRestore do
         expect(subject).to receive(:shell_out!).with(import_cmd)
         subject.import_db
       end
+    end
+  end
+
+  describe '.touch_sentinel' do
+    let(:file) { double('File', write: true) }
+    let(:file_dir) { '/var/opt/opscode' }
+    let(:file_path) { File.join(file_dir, 'bootstrapped') }
+
+    before do
+      allow(FileUtils).to receive(:mkdir_p).with(file_dir).and_return(true)
+      allow(File).to receive(:open).with(file_path, 'w').and_yield(file)
+    end
+
+    it 'touches the bootstrap sentinel file' do
+      expect(file).to receive(:write).with('bootstrapped!')
+      subject.touch_sentinel
     end
   end
 end

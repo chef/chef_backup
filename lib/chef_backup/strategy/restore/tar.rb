@@ -26,15 +26,12 @@ class TarRestore
   def restore
     log 'Restoring Chef Server from backup'
     cleanse_chef_server(config['agree_to_cleanse'])
-    stop_chef_server
     restore_configs
+    restore_services unless frontend?
+    touch_sentinel
     reconfigure_server
     update_config
-    restore_services unless frontend?
-    if restore_db_dump?
-      start_service(:postgresql)
-      import_db
-    end
+    import_db if restore_db_dump?
     start_chef_server
     cleanup
     log 'Restoration Completed!'
@@ -56,14 +53,15 @@ class TarRestore
   end
 
   def import_db
+    start_service('postgresql')
     sql_file = File.join(ChefBackup::Config['restore_dir'],
                          "chef_backup-#{manifest['backup_time']}.sql")
     ensure_file!(sql_file, InvalidDatabaseDump, "#{sql_file} not found")
 
     cmd = ['/opt/opscode/embedded/bin/chpst',
-           "-u #{private_chef['postgresql']['username']}",
+           "-u #{manifest['services']['postgresql']['username']}",
            '/opt/opscode/embedded/bin/psql',
-           "-U #{private_chef['postgresql']['username']}",
+           "-U #{manifest['services']['postgresql']['username']}",
            '-d opscode_chef',
            "< #{sql_file}"
           ].join(' ')
@@ -81,6 +79,13 @@ class TarRestore
     manifest.key?('configs') && manifest['configs'].keys.each do |config|
       restore_data(:configs, config)
     end
+  end
+
+  def touch_sentinel
+    dir = '/var/opt/opscode'
+    sentinel = File.join(dir, 'bootstrapped')
+    FileUtils.mkdir_p(dir) unless File.directory?(dir)
+    File.open(sentinel, 'w') { |file| file.write 'bootstrapped!' }
   end
 
   def restore_data(type, name)
