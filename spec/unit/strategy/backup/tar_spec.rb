@@ -125,6 +125,12 @@ describe ChefBackup::Strategy::TarBackup do
           expect(subject.data_map.services['postgresql'])
             .to include('pg_dump_success' => true)
         end
+
+        it 'adds the postgresql username to the data map' do
+          subject.dump_db
+          expect(subject.data_map.services['postgresql'])
+            .to include('username' => 'opscode-pgsql')
+        end
       end
     end
 
@@ -249,6 +255,14 @@ describe ChefBackup::Strategy::TarBackup do
               .to receive(:add_service)
               .with(service, config[service]['data_dir'])
           end
+
+          subject.populate_data_map
+        end
+
+        it 'populates the data map with the upgrades' do
+          expect(subject.data_map)
+            .to receive(:add_service)
+            .with('upgrades', '/var/opt/opscode/upgrades')
 
           subject.populate_data_map
         end
