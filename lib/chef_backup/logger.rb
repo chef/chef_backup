@@ -15,25 +15,25 @@ module ChefBackup
     attr_accessor :stdout
 
     def initialize(logfile = nil)
-      @stdout = logfile || $stdout
-      @highline = HighLine.new($stdin, @stdout)
+      $stdout = logfile ? File.open(logfile, 'ab') : $stdout
+      @highline = HighLine.new($stdin, $stdout)
     end
 
     def log(msg, level = :info)
       case level
       when :warn
         msg = "WARNING: #{msg}"
-        @stdout.puts(color? ? @highline.color(msg, :yellow) : msg)
+        $stdout.puts(color? ? @highline.color(msg, :yellow) : msg)
       when :error
         msg = "ERROR: #{msg}"
-        @stdout.puts(color? ? @highline.color(msg, :red) : msg)
+        $stdout.puts(color? ? @highline.color(msg, :red) : msg)
       else
-        @stdout.puts(msg)
+        $stdout.puts(msg)
       end
     end
 
     def color?
-      @stdout.tty?
+      $stdout.tty?
     end
   end
 end

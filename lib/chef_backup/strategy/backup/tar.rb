@@ -160,6 +160,11 @@ class TarBackup
     res = shell_out(cmd)
     res
   end
+
+  def pg_dump?
+    # defaults to true
+    private_chef['backup']['always_dump_db']
+  end
 end
 end
 end
