@@ -277,4 +277,18 @@ describe ChefBackup::Strategy::TarBackup do
       end
     end
   end
+
+  describe '.pg_dump?' do
+    it 'returns true' do
+      expect(subject.pg_dump?).to eq(true)
+    end
+
+    context 'when db dump is disabled' do
+      before { private_chef('backup' => { 'always_dump_db' => false }) }
+
+      it 'returns false' do
+        expect(subject.pg_dump?).to eq(false)
+      end
+    end
+  end
 end

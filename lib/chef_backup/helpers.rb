@@ -100,18 +100,6 @@ module Helpers
     File.directory?("/etc/#{service}")
   end
 
-  def pg_dump?
-    if frontend? # don't dump postgres on frontends
-      false
-    elsif private_chef['backup']['always_dump_db'] == true # defaults to true
-      true
-    elsif strategy !~ /lvm|ebs/ && backend? # backup non-block device backends
-      true
-    else
-      false # if we made it here then we're on lvm/ebs and overrode defaults
-    end
-  end
-
   def strategy
     private_chef['backup']['strategy']
   end
