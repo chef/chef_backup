@@ -8,9 +8,9 @@ Gem::Specification.new do |spec|
   spec.version       = ChefBackup::VERSION
   spec.authors       = ['Ryan Cragun']
   spec.email         = ['me@ryan.ec']
-  spec.summary       = 'A library to backup an Enterprise Chef server'
+  spec.summary       = 'A library to backup a Chef Server'
   spec.description   = spec.summary
-  spec.homepage      = 'https://github.com/ryancragun/chef_backup'
+  spec.homepage      = 'https://github.com/chef/chef_backup'
   spec.license       = 'Apachev2'
 
   spec.files         = `git ls-files -z`.split("\x0")
