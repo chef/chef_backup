@@ -1,4 +1,4 @@
 # ChefBackup module
 module ChefBackup
-  VERSION = '0.0.1.dev.1'
+  VERSION = '0.0.1.dev.2'
 end
