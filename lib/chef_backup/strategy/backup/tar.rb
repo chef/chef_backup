@@ -1,6 +1,7 @@
 require 'fileutils'
 require 'json'
 require 'time'
+require 'highline/import'
 
 # rubocop:disable IndentationWidth
 module ChefBackup
@@ -122,9 +123,14 @@ class TarBackup
     log 'Starting Chef Server backup'
     populate_data_map
     if backend?
-      stop_chef_server(except: [:keepalived, :postgresql]) unless online?
-      dump_db
-      stop_service(:postgresql) unless online?
+      if !online?
+        ask_to_go_offline unless offline_permission_granted?
+        stop_chef_server(except: [:keepalived, :postgresql])
+        dump_db
+        stop_service(:postgresql)
+      else
+        dump_db
+      end
     end
     write_manifest
     create_tarball
@@ -164,6 +170,18 @@ class TarBackup
   def pg_dump?
     # defaults to true
     private_chef['backup']['always_dump_db']
+  end
+
+  def offline_permission_granted?
+    private_chef['backup']['agree_to_go_offline']
+  end
+
+  def ask_to_go_offline
+    msg = 'WARNING:  Offline backup mode must stop your Chef server before '
+    msg << 'continuing.  You can skip this message by passing a "--yes" '
+    msg << 'argument. Do you wish to proceed? (y/N):'
+
+    exit(1) unless ask(msg) =~ /^y/i
   end
 end
 end

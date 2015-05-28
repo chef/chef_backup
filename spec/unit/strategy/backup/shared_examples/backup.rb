@@ -71,4 +71,22 @@ shared_examples 'a tar based offline backend' do
     expect(subject).to receive(:dump_db).once
     subject.backup
   end
+
+  context 'when the user has not agreed to go offline' do
+    before { private_chef('backup' => { 'agree_to_go_offline' => false }) }
+
+    it 'prompts the user' do
+      expect(subject).to receive(:ask_to_go_offline).once
+      subject.backup
+    end
+  end
+
+  context 'when the user has agreed to go offline' do
+    before { private_chef('backup' => { 'agree_to_go_offline' => true }) }
+
+    it 'prompts the user' do
+      expect(subject).to_not receive(:ask_to_go_offline)
+      subject.backup
+    end
+  end
 end
