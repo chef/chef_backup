@@ -27,6 +27,19 @@ describe ChefBackup::Strategy::TarRestore do
     }
   end
 
+  let(:config_from_backup_file) { File.join(restore_dir, 'etc', 'opscode',
+                                            'chef-server-running.json') }
+  let(:config_from_backup) do
+  {
+    'private_chef' => {
+      'topology' => 'ha',
+      'ha' => {
+        'path' => '/var/opt/opscode/drbd/data'
+      }
+    }
+  }.to_json
+  end
+
   let(:pg_dump_success) { true }
   let(:tarball_path) { '/var/backups/chef-backup-2014-12-02-22-46-58.tgz' }
   let(:configs) { manifest['configs'].keys }
@@ -60,6 +73,12 @@ describe ChefBackup::Strategy::TarRestore do
 
       allow(subject).to receive(:tarball_path).and_return(tarball_path)
       allow(subject).to receive(:manifest).and_return(manifest)
+      allow(File).to receive(:read).with(config_from_backup_file).and_return(config_from_backup)
+      allow(FileUtils).to receive(:mkdir_p).with('/var/opt/opscode/plugins').and_return(true)
+      allow(FileUtils).to receive(:ln_sf).with('/opt/opscode/chef-server-plugin.rb', '/var/opt/opscode/plugins/chef-ha-drbd.rb').and_return(true)
+      allow(File).to receive(:read).with('/proc/mounts').and_return("/var/opt/opscode/drbd/data\nstuff")
+      allow(FileUtils).to receive(:touch).with('/var/opt/opscode/drbd/drbd_ready').and_return(true)
+      allow(FileUtils).to receive(:mkdir_p).with('/tmp/chef_backup/tmp_dir').and_return(true)
     end
 
     it_behaves_like 'a tar based restore'
