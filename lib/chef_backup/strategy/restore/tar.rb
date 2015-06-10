@@ -26,6 +26,12 @@ class TarRestore
   def restore
     log 'Restoring Chef Server from backup'
     cleanse_chef_server(config['agree_to_cleanse'])
+    if config_from_backup['private_chef']['topology'] == 'ha'
+      log 'Performing HA restore - please ensure that keepalived is not running on the standby host'
+      fix_ha_plugins
+      check_ha_volume
+      touch_drbd_ready
+    end
     restore_configs
     restore_services unless frontend?
     touch_sentinel
@@ -35,6 +41,14 @@ class TarRestore
     start_chef_server
     cleanup
     log 'Restoration Completed!'
+  end
+
+  def config_from_backup
+    config_file = File.expand_path(File.join(ChefBackup::Config['restore_dir'],
+                                            'etc', 'opscode',
+                                            'chef-server-running.json'))
+    @config_from_backup ||=
+      JSON.parse(File.read(config_file)) || {}
   end
 
   def manifest
@@ -100,6 +114,35 @@ class TarRestore
 
   def backup_name
     @backup_name ||= Pathname.new(tarball_path).basename.sub_ext('').to_s
+  end
+
+  def fix_ha_plugins
+    log 'Fixing HA plugins directory (https://github.com/chef/chef-server/issues/115)'
+    plugins_dir = '/var/opt/opscode/plugins'
+    drbd_plugin = File.join(plugins_dir, 'chef-ha-drbd.rb')
+
+    FileUtils.mkdir_p(plugins_dir) unless Dir.exist?(plugins_dir)
+    FileUtils.ln_sf('/opt/opscode/chef-server-plugin.rb', drbd_plugin) unless
+      File.exist?(drbd_plugin)
+  end
+
+  def check_ha_volume
+    log "Checking that the HA storage volume is mounted"
+    ha_data_dir = config_from_backup['private_chef']['ha']['path']
+
+    unless ha_data_dir_mounted?(ha_data_dir)
+      raise "Please mount the data directory #{ha_data_dir} and perform any DRBD configuration before continuing"
+    end
+  end
+
+  def ha_data_dir_mounted?(ha_data_dir)
+    File.read('/proc/mounts').split("\n").grep(/#{ha_data_dir}/).count > 0
+  end
+
+  def touch_drbd_ready
+    log "Touching drbd_ready file"
+    FileUtils.touch('/var/opt/opscode/drbd/drbd_ready') unless
+      File.exist?('/var/opt/opscode/drbd/drbd_ready')
   end
 
   def reconfigure_server
