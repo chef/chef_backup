@@ -34,7 +34,7 @@ module ChefBackup
       @configs[config]['data_dir'] = path
     end
 
-    def add_ha_info(k,v)
+    def add_ha_info(k, v)
       @ha[k] = v
     end
 

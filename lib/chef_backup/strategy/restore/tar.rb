@@ -119,11 +119,11 @@ class TarRestore
   end
 
   def check_ha_volume
-    log "Checking that the HA storage volume is mounted"
+    log 'Checking that the HA storage volume is mounted'
     ha_data_dir = manifest['ha']['path']
 
     unless ha_data_dir_mounted?(ha_data_dir)
-      raise "Please mount the data directory #{ha_data_dir} and perform any DRBD configuration before continuing"
+      fail "Please mount the data directory #{ha_data_dir} and perform any DRBD configuration before continuing"
     end
   end
 
@@ -132,7 +132,7 @@ class TarRestore
   end
 
   def touch_drbd_ready
-    log "Touching drbd_ready file"
+    log 'Touching drbd_ready file'
     FileUtils.touch('/var/opt/opscode/drbd/drbd_ready') unless
       File.exist?('/var/opt/opscode/drbd/drbd_ready')
   end

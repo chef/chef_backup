@@ -113,7 +113,7 @@ module Helpers
   end
 
   def backend?
-    private_chef['role'] =~  /backend|standalone/
+    private_chef['role'] =~ /backend|standalone/
   end
 
   def online?
