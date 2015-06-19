@@ -26,7 +26,7 @@ class TarRestore
   def restore
     log 'Restoring Chef Server from backup'
     cleanse_chef_server(config['agree_to_cleanse'])
-    if config_from_backup['private_chef']['topology'] == 'ha'
+    if manifest['topology'] == 'ha'
       log 'Performing HA restore - please ensure that keepalived is not running on the standby host'
       fix_ha_plugins
       check_ha_volume
@@ -41,14 +41,6 @@ class TarRestore
     start_chef_server
     cleanup
     log 'Restoration Completed!'
-  end
-
-  def config_from_backup
-    config_file = File.expand_path(File.join(ChefBackup::Config['restore_dir'],
-                                            'etc', 'opscode',
-                                            'chef-server-running.json'))
-    @config_from_backup ||=
-      JSON.parse(File.read(config_file)) || {}
   end
 
   def manifest
@@ -128,7 +120,7 @@ class TarRestore
 
   def check_ha_volume
     log "Checking that the HA storage volume is mounted"
-    ha_data_dir = config_from_backup['private_chef']['ha']['path']
+    ha_data_dir = manifest['ha']['path']
 
     unless ha_data_dir_mounted?(ha_data_dir)
       raise "Please mount the data directory #{ha_data_dir} and perform any DRBD configuration before continuing"
