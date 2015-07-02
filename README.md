@@ -12,6 +12,11 @@ chef-server-ctl backup
 chef-server-ctl restore some_backup.tgz
 ```
 
+## Usage on Older Chef Servers:
+
+Older chef-servers won't have the `backup` option to `chef-server-ctl`. In
+that case it's pretty straightforward to ...
+
 ## Contributing
 
 1. Fork it ( https://github.com/chef/chef_backup/fork )
