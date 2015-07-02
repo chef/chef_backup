@@ -42,22 +42,3 @@ task :console do
   Pry.config.history.should_load = true
   Pry.start
 end
-
-desc 'backup'
-task :backup do
-  require 'chef_backup'
-  require 'json'
-  f = '/etc/opscode/chef-server-running.json'
-  running_config = JSON.parse(File.read(f))
-  running_config['restore_param'] = '/tmp/backup.tgz'
-  running_config['tmp_dir'] = '/tmp/backup_tmp'
-  running_config['private_chef']['backup'] = {
-    'strategy' => 'tar',
-     'agree_to_go_offline' => 'true'
-  }
-  @runner = ChefBackup::Runner.new(
-    running_config
-  )
-  status = @runner.backup
-  exit(status ? 0 : 1)
-end
