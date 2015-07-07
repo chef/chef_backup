@@ -12,10 +12,12 @@ chef-server-ctl backup
 chef-server-ctl restore some_backup.tgz
 ```
 
-## Usage on Older Chef Servers:
+## Running on older server before Chef Server 12.1.0
 
-Older chef-servers won't have the `backup` option to `chef-server-ctl`. In
-that case it's pretty straightforward to ...
+- /opt/opscode/embedded/bin/gem install chef_server
+- bin/chef_server tar
+
+*WIP*
 
 ## Contributing
 

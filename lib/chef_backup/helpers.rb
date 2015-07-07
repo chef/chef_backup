@@ -4,6 +4,7 @@ require 'chef_backup/config'
 require 'chef_backup/logger'
 
 # rubocop:disable IndentationWidth
+# rubocop:disable ModuleLength
 module ChefBackup
 # Common helper methods that are usefull in many classes
 module Helpers
@@ -109,7 +110,7 @@ module Helpers
   end
 
   def backend?
-    private_chef['role'] =~  /backend|standalone/
+    private_chef['role'] =~ /backend|standalone/
   end
 
   def online?
