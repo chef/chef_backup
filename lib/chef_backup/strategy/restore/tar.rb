@@ -1,7 +1,7 @@
 require 'fileutils'
 require 'pathname'
 require 'forwardable'
-require 'chef/mixin/deep_merge'
+require 'deep_merge'
 
 # rubocop:disable IndentationWidth
 module ChefBackup
@@ -11,7 +11,6 @@ class TarRestore
   # rubocop:enable IndentationWidth
   include ChefBackup::Helpers
   include ChefBackup::Exceptions
-  include Chef::Mixin::DeepMerge
   extend Forwardable
 
   attr_accessor :tarball_path
@@ -118,7 +117,7 @@ class TarRestore
   end
 
   def update_config
-    ChefBackup::Config.config = deep_merge(config.dup, running_config)
+    ChefBackup::Config.config = DeepMerge.deep_merge(running_config, config.dup)
   end
 end # Tar
 end # Strategy
