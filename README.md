@@ -14,10 +14,12 @@ chef-server-ctl restore some_backup.tgz
 
 ## Running on older server before Chef Server 12.1.0
 
-- /opt/opscode/embedded/bin/gem install chef_server
-- bin/chef_server tar
+As root:
 
-*WIP*
+```
+/opt/opscode/embedded/bin/gem install --pre chef_server --no-ri --no-rdoc
+/opt/opscode/embedded/bin/chef_backup
+```
 
 ## Contributing
 
