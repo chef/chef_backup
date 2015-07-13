@@ -75,6 +75,12 @@ class TarBackup
     if private_chef.key?('upgrades')
       data_map.add_service('upgrades', private_chef['upgrades']['dir'])
     end
+
+    if ha?
+      data_map.add_service('keepalived', private_chef['keepalived']['dir'])
+      data_map.add_ha_info('provider', private_chef['ha']['provider'])
+      data_map.add_ha_info('path', private_chef['ha']['path'])
+    end
   end
 
   def manifest
@@ -111,6 +117,7 @@ class TarBackup
     @data_map ||= ChefBackup::DataMap.new do |data|
       data.backup_time = backup_time
       data.strategy = strategy
+      data.topology = topology
     end
   end
 

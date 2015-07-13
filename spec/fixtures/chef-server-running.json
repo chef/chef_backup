@@ -534,6 +534,10 @@
     },
     "lb-internal": {
     },
+    "ha": {
+      "provider": "drbd",
+      "path": "/var/opt/opscode/drbd/data"
+    },
     "topology": "ha",
     "servers": {
       "backend1.opscode.kryptonite": {

@@ -60,7 +60,7 @@ describe ChefBackup::Strategy::TarBackup do
       end
     end
 
-    context 'on a standlone' do
+    context 'on a standalone' do
       before { private_chef('role' => 'standalone') }
 
       context 'during an online backup' do
@@ -224,7 +224,7 @@ describe ChefBackup::Strategy::TarBackup do
       allow(subject).to receive(:data_map).and_return(data_map)
       allow(subject).to receive(:stateful_services).and_return(services)
       allow(subject).to receive(:config_directories).and_return(configs)
-      %w(add_service add_config).each do |method|
+      %w(add_service add_config add_ha_info).each do |method|
         allow(data_map).to receive(method.to_sym).and_return(true)
       end
     end

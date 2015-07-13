@@ -11,15 +11,17 @@ module ChefBackup
       attr_writer :data_map
     end
 
-    attr_accessor :strategy, :backup_time, :configs, :services
+    attr_accessor :strategy, :backup_time, :topology, :configs, :services, :ha
 
     def initialize
       @services = {}
       @configs = {}
+      @ha = {}
       yield self if block_given?
 
       @backup_time ||= Time.now.iso8601
       @strategy ||= 'none'
+      @toplogy ||= 'idontknow'
     end
 
     def add_service(service, data_dir)
@@ -32,10 +34,16 @@ module ChefBackup
       @configs[config]['data_dir'] = path
     end
 
+    def add_ha_info(k, v)
+      @ha[k] = v
+    end
+
     def manifest
       {
         'strategy' => strategy,
         'backup_time' => backup_time,
+        'topology' => topology,
+        'ha' => ha,
         'services' => services,
         'configs' => configs
       }

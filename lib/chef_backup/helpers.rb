@@ -104,16 +104,32 @@ module Helpers
     private_chef['backup']['strategy']
   end
 
+  def topology
+    private_chef['topology']
+  end
+
   def frontend?
     private_chef['role'] == 'frontend'
   end
 
   def backend?
-    private_chef['role'] =~  /backend|standalone/
+    private_chef['role'] =~ /backend|standalone/
   end
 
   def online?
     private_chef['backup']['mode'] == 'online'
+  end
+
+  def ha?
+    topology == 'ha'
+  end
+
+  def tier?
+    topology == 'tier'
+  end
+
+  def standalone?
+    topology == 'standalone'
   end
 
   def tmp_dir
