@@ -19,3 +19,4 @@ Metrics/AbcSize:
 AllCops:
   Exclude:
     - 'Guardfile'
+    - 'vendor/**/*'

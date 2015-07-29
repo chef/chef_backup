@@ -21,7 +21,8 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'di-ruby-lvm'
   spec.add_dependency 'mixlib-shellout'
   spec.add_dependency 'highline'
-  spec.add_dependency 'chef'
+  spec.add_dependency 'deep_merge'
+  spec.add_dependency 'chef-config'
 
   spec.add_development_dependency 'bundler', '~> 1.6'
   spec.add_development_dependency 'rake'

@@ -12,6 +12,15 @@ chef-server-ctl backup
 chef-server-ctl restore some_backup.tgz
 ```
 
+## Running on older server before Chef Server 12.1.0
+
+As root:
+
+```
+/opt/opscode/embedded/bin/gem install --pre chef_server --no-ri --no-rdoc
+/opt/opscode/embedded/bin/chef_backup
+```
+
 ## Contributing
 
 1. Fork it ( https://github.com/chef/chef_backup/fork )
