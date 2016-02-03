@@ -48,7 +48,7 @@ class TarBackup
   def dump_db
     return true unless pg_dump?
     if external_pg?
-      log("Cannot backup external postgresql", :warn)
+      log('Cannot backup external postgresql', :warn)
       return false
     end
     pg_user = private_chef['postgresql']['username']
@@ -66,7 +66,7 @@ class TarBackup
   end
 
   def populate_data_map
-    if !config_only?
+    unless config_only?
       stateful_services.each do |service|
         next unless private_chef.key?(service)
         data_map.add_service(service, private_chef[service]['data_dir'])
@@ -100,20 +100,18 @@ class TarBackup
     end
   end
 
-  DEFAULT_STATEFUL_SERVICES =  %w(
-    rabbitmq
-    opscode-solr4
-    redis_lb
-    postgresql
-    bookshelf
-   )
+  DEFAULT_STATEFUL_SERVICES = %w(rabbitmq
+                                 opscode-solr4
+                                 redis_lb
+                                 postgresql
+                                 bookshelf).freeze
 
   def stateful_services
     if private_chef.key?('drbd') && private_chef['drbd']['enable'] == true
       ['drbd']
     else
       DEFAULT_STATEFUL_SERVICES.select do |service|
-        private_chef[service] && private_chef[service]['enable'] && (! private_chef[service]['external'])
+        service_enabled?(service)
       end
     end
   end
@@ -137,7 +135,7 @@ class TarBackup
   end
 
   def backup
-    log "Starting Chef Server backup #{config_only? ? "(config only)" : ""}"
+    log "Starting Chef Server backup #{config_only? ? '(config only)' : ''}"
     populate_data_map
     stopped = false
     if backend? && !config_only?
@@ -188,11 +186,15 @@ class TarBackup
 
   def export_filename
     postfix = if config_only?
-                "-config"
+                '-config'
               else
-                ""
+                ''
               end
     "chef-backup#{postfix}-#{backup_time}.tgz"
+  end
+
+  def service_enabled?(service)
+    private_chef[service] && private_chef[service]['enable'] && !private_chef[service]['external']
   end
 
   def external_pg?

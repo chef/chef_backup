@@ -26,13 +26,13 @@ describe ChefBackup::Strategy::TarBackup do
       allow(subject).to receive(:dump_db).and_return(true)
     end
 
-    context "when config_only is true" do
+    context 'when config_only is true' do
       before do
-        private_chef('backup' => { 'config_only' => true})
+        private_chef('backup' => { 'config_only' => true })
       end
 
-      it_behaves_like "a tar based backup"
-      it_behaves_like "a tar based frontend"
+      it_behaves_like 'a tar based backup'
+      it_behaves_like 'a tar based frontend'
     end
 
     context 'on a frontend' do
@@ -190,7 +190,8 @@ describe ChefBackup::Strategy::TarBackup do
 
   describe '.write_manifest' do
     let(:manifest) do
-      { 'some' => {
+      { 'some' =>
+        {
           'nested' => {
             'hash' => true
           },
@@ -278,10 +279,10 @@ describe ChefBackup::Strategy::TarBackup do
       end
     end
 
-    context "when config_only is true" do
+    context 'when config_only is true' do
       before do
-        private_chef('role' => 'standalone', 'backup' => { 'config_only' => true})
-        data_mock = double("DataMap")
+        private_chef('role' => 'standalone', 'backup' => { 'config_only' => true })
+        data_mock = double('DataMap')
         allow(subject).to receive(:data_map).and_return(data_mock)
       end
 
