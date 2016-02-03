@@ -47,6 +47,10 @@ class TarBackup
   #
   def dump_db
     return true unless pg_dump?
+    if external_pg?
+      log("Cannot backup external postgresql", :warn)
+      return false
+    end
     pg_user = private_chef['postgresql']['username']
     sql_file = "#{tmp_dir}/chef_backup-#{backup_time}.sql"
     cmd = ['/opt/opscode/embedded/bin/chpst',
@@ -62,9 +66,11 @@ class TarBackup
   end
 
   def populate_data_map
-    stateful_services.each do |service|
-      next unless private_chef.key?(service)
-      data_map.add_service(service, private_chef[service]['data_dir'])
+    if !config_only?
+      stateful_services.each do |service|
+        next unless private_chef.key?(service)
+        data_map.add_service(service, private_chef[service]['data_dir'])
+      end
     end
 
     config_directories.each do |config|
@@ -76,7 +82,7 @@ class TarBackup
       data_map.add_service('upgrades', private_chef['upgrades']['dir'])
     end
 
-    if ha?
+    if ha? && !config_only?
       data_map.add_service('keepalived', private_chef['keepalived']['dir'])
       data_map.add_ha_info('provider', private_chef['ha']['provider'])
       data_map.add_ha_info('path', private_chef['ha']['path'])
@@ -94,17 +100,21 @@ class TarBackup
     end
   end
 
+  DEFAULT_STATEFUL_SERVICES =  %w(
+    rabbitmq
+    opscode-solr4
+    redis_lb
+    postgresql
+    bookshelf
+   )
+
   def stateful_services
     if private_chef.key?('drbd') && private_chef['drbd']['enable'] == true
       ['drbd']
     else
-      %w(
-        rabbitmq
-        opscode-solr4
-        redis_lb
-        postgresql
-        bookshelf
-      )
+      DEFAULT_STATEFUL_SERVICES.select do |service|
+        private_chef[service] && private_chef[service]['enable'] && (! private_chef[service]['external'])
+      end
     end
   end
 
@@ -127,21 +137,23 @@ class TarBackup
   end
 
   def backup
-    log 'Starting Chef Server backup'
+    log "Starting Chef Server backup #{config_only? ? "(config only)" : ""}"
     populate_data_map
-    if backend?
+    stopped = false
+    if backend? && !config_only?
       if !online?
         ask_to_go_offline unless offline_permission_granted?
         stop_chef_server(except: [:keepalived, :postgresql])
         dump_db
         stop_service(:postgresql)
+        stopped = true
       else
         dump_db
       end
     end
     write_manifest
     create_tarball
-    start_chef_server if backend? && !online?
+    start_chef_server if stopped
     export_tarball
     cleanup
     log 'Backup Complete!'
@@ -156,7 +168,7 @@ class TarBackup
   def create_tarball
     log 'Creating backup tarball'
     cmd = [
-      "tar -czf #{tmp_dir}/chef-backup-#{backup_time}.tgz",
+      "tar -czf #{tmp_dir}/#{export_filename}",
       data_map.services.map { |_, v| v['data_dir'] }.compact.join(' '),
       data_map.configs.map { |_, v| v['data_dir'] }.compact.join(' '),
       Dir["#{tmp_dir}/*"].map { |f| File.basename(f) }.join(' ')
@@ -168,10 +180,23 @@ class TarBackup
 
   def export_tarball
     log "Exporting tarball to #{export_dir}"
-    cmd = "rsync -chaz #{tmp_dir}/chef-backup-#{backup_time}.tgz #{export_dir}/"
+    cmd = "rsync -chaz #{tmp_dir}/#{export_filename} #{export_dir}/"
 
     res = shell_out(cmd)
     res
+  end
+
+  def export_filename
+    postfix = if config_only?
+                "-config"
+              else
+                ""
+              end
+    "chef-backup#{postfix}-#{backup_time}.tgz"
+  end
+
+  def external_pg?
+    private_chef['postgresql']['external']
   end
 
   def pg_dump?
@@ -181,6 +206,10 @@ class TarBackup
 
   def offline_permission_granted?
     private_chef['backup']['agree_to_go_offline']
+  end
+
+  def config_only?
+    private_chef['backup']['config_only']
   end
 
   def ask_to_go_offline

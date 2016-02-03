@@ -9,6 +9,7 @@ module ChefBackup
 
     DEFAULT_CONFIG = {
       'backup' => {
+        'config_only' => false,
         'always_dump_db' => true,
         'strategy' => 'none',
         'export_dir' => '/var/opt/chef-backup'

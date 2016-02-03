@@ -26,6 +26,15 @@ describe ChefBackup::Strategy::TarBackup do
       allow(subject).to receive(:dump_db).and_return(true)
     end
 
+    context "when config_only is true" do
+      before do
+        private_chef('backup' => { 'config_only' => true})
+      end
+
+      it_behaves_like "a tar based backup"
+      it_behaves_like "a tar based frontend"
+    end
+
     context 'on a frontend' do
       before { private_chef('role' => 'frontend') }
 
@@ -182,11 +191,11 @@ describe ChefBackup::Strategy::TarBackup do
   describe '.write_manifest' do
     let(:manifest) do
       { 'some' => {
-        'nested' => {
-          'hash' => true
-        },
-        'another' => true
-      }
+          'nested' => {
+            'hash' => true
+          },
+          'another' => true
+        }
       }
     end
 
@@ -266,6 +275,28 @@ describe ChefBackup::Strategy::TarBackup do
 
           subject.populate_data_map
         end
+      end
+    end
+
+    context "when config_only is true" do
+      before do
+        private_chef('role' => 'standalone', 'backup' => { 'config_only' => true})
+        data_mock = double("DataMap")
+        allow(subject).to receive(:data_map).and_return(data_mock)
+      end
+
+      it 'populates the data map with config and upgrade directories only' do
+        configs.each do |config|
+          expect(subject.data_map)
+            .to receive(:add_config)
+            .with(config, "/etc/#{config}")
+        end
+
+        expect(subject.data_map)
+          .to receive(:add_service)
+          .with('upgrades', '/var/opt/opscode/upgrades')
+
+        subject.populate_data_map
       end
     end
 
