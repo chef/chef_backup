@@ -27,8 +27,8 @@ class TarBackup
   def export_dir
     @export_dir ||= begin
       dir =
-        if private_chef['backup']['export_dir']
-          private_chef['backup']['export_dir']
+        if service_config['backup']['export_dir']
+          service_config['backup']['export_dir']
         else
           msg = ["backup['export_dir'] has not been set.",
                  'defaulting to: /var/opt/chef-backups'].join(' ')
@@ -51,11 +51,11 @@ class TarBackup
       log('Cannot backup external postgresql', :warn)
       return false
     end
-    pg_user = private_chef['postgresql']['username']
+    pg_user = service_config['postgresql']['username']
     sql_file = "#{tmp_dir}/chef_backup-#{backup_time}.sql"
-    cmd = ['/opt/opscode/embedded/bin/chpst',
+    cmd = [chpst,
            "-u #{pg_user}",
-           '/opt/opscode/embedded/bin/pg_dumpall',
+           pg_dumpall,
            "> #{sql_file}"
           ].join(' ')
     log "Dumping Postgresql database to #{sql_file}"
@@ -65,11 +65,19 @@ class TarBackup
     true
   end
 
+  def chpst
+    "#{base_install_dir}/embedded/bin/chpst"
+  end
+
+  def pg_dumpall
+    "#{base_install_dir}/embedded/bin/pg_dumpall"
+  end
+
   def populate_data_map
     unless config_only?
       stateful_services.each do |service|
-        next unless private_chef.key?(service)
-        data_map.add_service(service, private_chef[service]['data_dir'])
+        next unless service_config.key?(service)
+        data_map.add_service(service, service_config[service]['data_dir'])
       end
     end
 
@@ -78,14 +86,14 @@ class TarBackup
     end
 
     # Don't forget the upgrades!
-    if private_chef.key?('upgrades')
-      data_map.add_service('upgrades', private_chef['upgrades']['dir'])
+    if service_config.key?('upgrades')
+      data_map.add_service('upgrades', service_config['upgrades']['dir'])
     end
 
     if ha? && !config_only?
-      data_map.add_service('keepalived', private_chef['keepalived']['dir'])
-      data_map.add_ha_info('provider', private_chef['ha']['provider'])
-      data_map.add_ha_info('path', private_chef['ha']['path'])
+      data_map.add_service('keepalived', service_config['keepalived']['dir'])
+      data_map.add_ha_info('provider', service_config['ha']['provider'])
+      data_map.add_ha_info('path', service_config['ha']['path'])
     end
   end
 
@@ -102,12 +110,13 @@ class TarBackup
 
   DEFAULT_STATEFUL_SERVICES = %w(rabbitmq
                                  opscode-solr4
+                                 elasticsearch
                                  redis_lb
                                  postgresql
                                  bookshelf).freeze
 
   def stateful_services
-    if private_chef.key?('drbd') && private_chef['drbd']['enable'] == true
+    if service_config.key?('drbd') && service_config['drbd']['enable'] == true
       ['drbd']
     else
       DEFAULT_STATEFUL_SERVICES.select do |service|
@@ -117,7 +126,7 @@ class TarBackup
   end
 
   def config_directories
-    %w(opscode) + enabled_addons
+    [project_name] + enabled_addons
   end
 
   # The data_map is a working record of all of the data that is backed up.
@@ -194,24 +203,24 @@ class TarBackup
   end
 
   def service_enabled?(service)
-    private_chef[service] && private_chef[service]['enable'] && !private_chef[service]['external']
+    service_config[service] && service_config[service]['enable'] && !service_config[service]['external']
   end
 
   def external_pg?
-    private_chef['postgresql']['external']
+    service_config['postgresql']['external']
   end
 
   def pg_dump?
     # defaults to true
-    private_chef['backup']['always_dump_db']
+    service_config['backup']['always_dump_db']
   end
 
   def offline_permission_granted?
-    private_chef['backup']['agree_to_go_offline']
+    service_config['backup']['agree_to_go_offline']
   end
 
   def config_only?
-    private_chef['backup']['config_only']
+    service_config['backup']['config_only']
   end
 
   def ask_to_go_offline

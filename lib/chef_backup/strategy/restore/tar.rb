@@ -20,7 +20,7 @@ class TarRestore
 
   def initialize(path)
     @tarball_path = path
-    @log = ChefBackup::Logger.logger(private_chef['backup']['logfile'] || nil)
+    @log = ChefBackup::Logger.logger(service_config['backup']['logfile'] || nil)
   end
 
   def restore
@@ -64,15 +64,23 @@ class TarRestore
                          "chef_backup-#{manifest['backup_time']}.sql")
     ensure_file!(sql_file, InvalidDatabaseDump, "#{sql_file} not found")
 
-    cmd = ['/opt/opscode/embedded/bin/chpst',
+    cmd = [chpst,
            "-u #{manifest['services']['postgresql']['username']}",
-           '/opt/opscode/embedded/bin/psql',
+           pgsql,
            "-U #{manifest['services']['postgresql']['username']}",
            '-d opscode_chef',
            "< #{sql_file}"
           ].join(' ')
     log 'Importing Database dump'
     shell_out!(cmd)
+  end
+
+  def chpst
+    "#{base_install_dir}/embedded/bin/chpst"
+  end
+
+  def pgsql
+    "#{base_install_dir}/embedded/bin/psql"
   end
 
   def restore_services
@@ -139,12 +147,12 @@ class TarRestore
 
   def reconfigure_server
     log 'Reconfiguring the Chef Server'
-    shell_out('chef-server-ctl reconfigure')
+    shell_out("#{ctl_command} reconfigure")
   end
 
   def cleanse_chef_server(agree)
     log 'Cleaning up any old files'
-    shell_out!("chef-server-ctl cleanse #{agree || ''}")
+    shell_out!("#{ctl_command} cleanse #{agree || ''}")
   end
 
   def running_config

@@ -17,7 +17,7 @@ module ChefBackup
     #
     def initialize(running_config)
       ChefBackup::Config.config = running_config
-      ChefBackup::Logger.logger(private_chef['backup']['logfile'] || nil)
+      ChefBackup::Logger.logger(service_config['backup']['logfile'] || nil)
     end
 
     #
@@ -26,6 +26,13 @@ module ChefBackup
     def backup
       @backup ||= ChefBackup::Strategy.backup(backup_strategy)
       @backup.backup
+    end
+
+    #
+    # @return [ChefBackup::Config]
+    #
+    def config
+      ChefBackup::Config.config
     end
 
     #
@@ -40,7 +47,7 @@ module ChefBackup
     # @return [String] String name of the configured backup strategy
     #
     def backup_strategy
-      config['private_chef']['backup']['strategy']
+      service_config['backup']['strategy']
     end
 
     #
