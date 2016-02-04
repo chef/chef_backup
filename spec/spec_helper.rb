@@ -17,11 +17,6 @@ def private_chef!(args = {})
   ChefBackup::Config.config = args
 end
 
-# Merge attributes into existing cli_args
-def cli_args(*args)
-  Chef::Mixin::DeepMerge.deep_merge!(*args, ChefBackup::Config.config)
-end
-
 # Overwrite config with given CLI args
 def cli_args!(args)
   ChefBackup::Config.config = args

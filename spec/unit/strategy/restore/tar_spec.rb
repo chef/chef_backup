@@ -125,7 +125,7 @@ describe ChefBackup::Strategy::TarRestore do
   end
 
   describe '.manifest' do
-    let(:json) { "{\"some\":\"json\"}" }
+    let(:json) { '{"some":"json"}' }
     let(:manifest_json) { File.join(restore_dir, 'manifest.json') }
 
     it 'parses the manifest from the restore dir' do
