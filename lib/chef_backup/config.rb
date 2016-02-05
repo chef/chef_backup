@@ -14,7 +14,9 @@ module ChefBackup
         'strategy' => 'none',
         'export_dir' => '/var/opt/chef-backup',
         'project_name' => 'opscode',
-        'ctl-command' => 'chef-server-ctl'
+        'ctl-command' => 'chef-server-ctl',
+        'running_filepath' => '/etc/opscode/chef-server-running.json',
+        'database_name' => 'opscode_chef'
       }
     }.freeze
 

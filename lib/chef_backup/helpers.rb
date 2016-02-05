@@ -34,6 +34,14 @@ module Helpers
     service_config['backup']['ctl-command']
   end
 
+  def running_filepath
+    service_config['backup']['running_filepath']
+  end
+
+  def database_name
+    service_config['backup']['database_name']
+  end
+
   def log(message, level = :info)
     ChefBackup::Logger.logger.log(message, level)
   end
