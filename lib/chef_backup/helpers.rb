@@ -18,12 +18,20 @@ module Helpers
     chef-sync
   ).freeze
 
-  def private_chef
-    config['private_chef']
-  end
-
   def config
     ChefBackup::Config
+  end
+
+  def config_base
+    ChefBackup::Config['config_base']
+  end
+
+  def service_config
+    ChefBackup::Config[config_base]
+  end
+
+  def ctl_command
+    service_config['backup']['ctl-command']
   end
 
   def log(message, level = :info)
@@ -54,8 +62,20 @@ module Helpers
     cmd
   end
 
+  def project_name
+    service_config['backup']['project_name']
+  end
+
+  def base_install_dir
+    "/opt/#{project_name}"
+  end
+
+  def base_config_dir
+    "/etc/#{project_name}"
+  end
+
   def all_services
-    Dir['/opt/opscode/sv/*'].map { |f| File.basename(f) }.sort
+    Dir["#{base_install_dir}/sv/*"].map { |f| File.basename(f) }.sort
   end
 
   def enabled_services
@@ -67,16 +87,16 @@ module Helpers
   end
 
   def service_enabled?(service)
-    File.symlink?("/opt/opscode/service/#{service}")
+    File.symlink?("#{base_install_dir}/service/#{service}")
   end
 
   def stop_service(service)
-    res = shell_out("chef-server-ctl stop #{service}")
+    res = shell_out("#{ctl_command} stop #{service}")
     res
   end
 
   def start_service(service)
-    res = shell_out("chef-server-ctl start #{service}")
+    res = shell_out("#{ctl_command} start #{service}")
     res
   end
 
@@ -101,23 +121,23 @@ module Helpers
   end
 
   def strategy
-    private_chef['backup']['strategy']
+    service_config['backup']['strategy']
   end
 
   def topology
-    private_chef['topology']
+    service_config['topology']
   end
 
   def frontend?
-    private_chef['role'] == 'frontend'
+    service_config['role'] == 'frontend'
   end
 
   def backend?
-    private_chef['role'] =~ /backend|standalone/
+    service_config['role'] =~ /backend|standalone/
   end
 
   def online?
-    private_chef['backup']['mode'] == 'online'
+    service_config['backup']['mode'] == 'online'
   end
 
   def ha?
@@ -135,7 +155,7 @@ module Helpers
   def tmp_dir
     @tmp_dir ||= begin
       dir = safe_key { config['tmp_dir'] } ||
-            safe_key { private_chef['backup']['tmp_dir'] }
+            safe_key { service_config['backup']['tmp_dir'] }
       if dir
         FileUtils.mkdir_p(dir) unless File.directory?(dir)
         dir
