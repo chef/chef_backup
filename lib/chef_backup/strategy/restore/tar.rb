@@ -68,7 +68,7 @@ class TarRestore
            "-u #{manifest['services']['postgresql']['username']}",
            pgsql,
            "-U #{manifest['services']['postgresql']['username']}",
-           '-d opscode_chef',
+           "-d #{database_name}",
            "< #{sql_file}"
           ].join(' ')
     log 'Importing Database dump'
@@ -157,7 +157,7 @@ class TarRestore
 
   def running_config
     @running_config ||=
-      JSON.parse(File.read('/etc/opscode/chef-server-running.json')) || {}
+      JSON.parse(File.read(running_filepath)) || {}
   end
 
   def update_config
