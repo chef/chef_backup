@@ -43,6 +43,7 @@ class TarRestore
     log 'Restoration Completed!'
   end
 
+  attr_writer :manifest
   def manifest
     @manifest ||= begin
       manifest = File.expand_path(File.join(ChefBackup::Config['restore_dir'],
