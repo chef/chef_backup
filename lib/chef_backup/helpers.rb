@@ -9,14 +9,37 @@ module ChefBackup
 module Helpers
   # rubocop:enable IndentationWidth
 
-  SERVER_ADD_ONS = %w(
-    opscode-manage
-    opscode-reporting
-    opscode-push-jobs-server
-    opscode-analytics
-    chef-ha
-    chef-sync
-  ).freeze
+  SERVER_ADD_ONS = {
+    'opscode-manage' => {
+      'config_file' => '/etc/opscode-manage/manage.rb',
+      'ctl_command' => 'opscode-manage-ctl'
+    },
+    'opscode-reporting' => {
+      'config_file' => '/etc/opscode-reporting/opscode-reporting.rb',
+      'ctl_command' => 'opscode-reporting-ctl'
+    },
+    'opscode-push-jobs-server' => {
+      'config_file' => '/etc/opscode-push-jobs-server/opscode-push-jobs-server.rb',
+      'ctl_command' => 'opscode-push-jobs-server-ctl'
+    },
+    'opscode-analytics' => {
+      'config_file' => '/etc/opscode-analytics/opscode-analytics.rb',
+      'ctl_command' => 'opscode-analytics-ctl'
+    },
+    'chef-ha' => {
+      'config_file' => 'etc/opscode/chef-server.rb'
+    },
+    'chef-sync' => {
+      'config_file' => '/etc/chef-sync/chef-sync.rb',
+      'ctl_command' => 'chef-sync-ctl'
+    },
+    'chef-marketplace' => {
+      'config_file' => '/etc/chef-marketplace/marketplace.rb',
+      'ctl_command' => 'chef-marketplace-ctl'
+    }
+  }.freeze
+
+  DEFAULT_PG_OPTIONS = '-c statement_timeout=3600000'.freeze
 
   def config
     ChefBackup::Config
@@ -54,7 +77,7 @@ module Helpers
   # @return [TrueClass, FalseClass]
   #
   def ensure_file!(file, exception, message)
-    File.exist?(file) ? true : fail(exception, message)
+    File.exist?(file) ? true : raise(exception, message)
   end
 
   def shell_out(*command)
@@ -80,6 +103,18 @@ module Helpers
 
   def base_config_dir
     "/etc/#{project_name}"
+  end
+
+  def chpst
+    "#{base_install_dir}/embedded/bin/chpst"
+  end
+
+  def pgsql
+    "#{base_install_dir}/embedded/bin/psql"
+  end
+
+  def pg_options
+    config['pg_options'] || DEFAULT_PG_OPTIONS
   end
 
   def all_services
@@ -120,12 +155,35 @@ module Helpers
     enabled_services.each { |sv| start_service(sv) }
   end
 
-  def enabled_addons
-    SERVER_ADD_ONS.select { |service| addon?(service) }
+  def restart_chef_server
+    shell_out("#{ctl_command} restart #{service}")
   end
 
-  def addon?(service)
-    File.directory?("/etc/#{service}")
+  def reconfigure_add_ons
+    enabled_addons.each do |_name, config|
+      shell_out("#{config['ctl_command']} reconfigure") if config.key?('ctl_command')
+    end
+  end
+
+  def restart_add_ons
+    enabled_addons.each do |_name, config|
+      shell_out("#{config['ctl_command']} restart") if config.key?('ctl_command')
+    end
+  end
+
+  def reconfigure_marketplace
+    log 'Setting up Chef Marketplace'
+    shell_out('chef-marketplace-ctl reconfigure')
+  end
+
+  def enabled_addons
+    SERVER_ADD_ONS.select do |_name, config|
+      begin
+        File.directory?(File.dirname(config['config_file']))
+      rescue
+        false
+      end
+    end
   end
 
   def strategy
@@ -158,6 +216,10 @@ module Helpers
 
   def standalone?
     topology == 'standalone'
+  end
+
+  def marketplace?
+    shell_out('which chef-marketplace-ctl').exitstatus == 0
   end
 
   def tmp_dir

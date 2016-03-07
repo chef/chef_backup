@@ -107,13 +107,14 @@ describe ChefBackup::Strategy::TarBackup do
       ].join(' ')
     end
 
+    let(:pg_options) { ["PGOPTIONS=#{ChefBackup::Helpers::DEFAULT_PG_OPTIONS}"] }
     let(:tmp_dir) { '/tmp/notaswear' }
     let(:backup_time) { Time.now }
 
     before do
       allow(subject).to receive(:tmp_dir).and_return(tmp_dir)
       allow(subject).to receive(:backup_time).and_return(backup_time)
-      allow(subject).to receive(:shell_out!).with(dump_cmd).and_return(true)
+      allow(subject).to receive(:shell_out!).with(dump_cmd, env: pg_options).and_return(true)
       private_chef('postgresql' => { 'username' => 'opscode-pgsql' })
       subject.data_map.add_service('postgresql', '/data/dir')
     end
@@ -125,7 +126,7 @@ describe ChefBackup::Strategy::TarBackup do
         end
 
         it 'dumps the db' do
-          expect(subject).to receive(:shell_out!).with(dump_cmd)
+          expect(subject).to receive(:shell_out!).with(dump_cmd, env: pg_options)
           subject.dump_db
         end
 

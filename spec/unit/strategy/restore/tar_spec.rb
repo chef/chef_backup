@@ -41,7 +41,7 @@ describe ChefBackup::Strategy::TarRestore do
     before do
       %i(shell_out shell_out! unpack_tarball stop_chef_server ensure_file!
          start_chef_server reconfigure_server cleanse_chef_server
-         update_config import_db touch_sentinel
+         update_config import_db touch_sentinel restart_add_ons
       ).each do |method|
         allow(subject).to receive(method).and_return(true)
       end
@@ -60,6 +60,7 @@ describe ChefBackup::Strategy::TarRestore do
 
       allow(subject).to receive(:tarball_path).and_return(tarball_path)
       allow(subject).to receive(:manifest).and_return(manifest)
+      allow(subject).to receive(:marketplace?).and_return(false)
     end
 
     it_behaves_like 'a tar based restore'
@@ -121,6 +122,20 @@ describe ChefBackup::Strategy::TarRestore do
 
         it_behaves_like 'a tar based backend restore without db dump'
       end
+
+      context 'on a marketplace all-in-one' do
+        before do
+          allow(subject).to receive(:marketplace?).and_return(true)
+          allow(subject).to receive(:reconfigure_marketplace?).and_return(true)
+        end
+
+        it 'sets up chef-marketplace' do
+          expect(subject).to receive(:reconfigure_marketplace).once
+          subject.restore
+        end
+
+        it_behaves_like 'a tar based backend restore'
+      end
     end
   end
 
@@ -177,6 +192,8 @@ describe ChefBackup::Strategy::TarRestore do
   end
 
   describe '.import_db' do
+    let(:pg_options) { ["PGOPTIONS=#{ChefBackup::Helpers::DEFAULT_PG_OPTIONS}"] }
+
     before do
       allow(subject).to receive(:manifest).and_return(manifest)
       allow(subject).to receive(:shell_out!).and_return(true)
@@ -214,7 +231,7 @@ describe ChefBackup::Strategy::TarRestore do
       end
 
       it 'imports the database' do
-        expect(subject).to receive(:shell_out!).with(import_cmd)
+        expect(subject).to receive(:shell_out!).with(import_cmd, env: pg_options)
         subject.import_db
       end
     end

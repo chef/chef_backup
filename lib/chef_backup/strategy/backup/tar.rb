@@ -59,7 +59,7 @@ class TarBackup
            "> #{sql_file}"
           ].join(' ')
     log "Dumping Postgresql database to #{sql_file}"
-    shell_out!(cmd)
+    shell_out!(cmd, env: ["PGOPTIONS=#{pg_options}"])
     data_map.services['postgresql']['pg_dump_success'] = true
     data_map.services['postgresql']['username'] = pg_user
     true
@@ -126,7 +126,7 @@ class TarBackup
   end
 
   def config_directories
-    [project_name] + enabled_addons
+    [project_name] + enabled_addons.keys
   end
 
   # The data_map is a working record of all of the data that is backed up.
@@ -140,7 +140,7 @@ class TarBackup
 
   def not_implemented
     msg = "#{caller[0].split[1]} is not implemented for this strategy"
-    fail NotImplementedError, msg
+    raise NotImplementedError, msg
   end
 
   def backup

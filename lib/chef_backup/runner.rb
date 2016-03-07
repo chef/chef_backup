@@ -69,7 +69,7 @@ module ChefBackup
         elsif ebs_snapshot?
           'ebs'
         else
-          fail InvalidStrategy, "#{restore_param} is not a valid backup"
+          raise InvalidStrategy, "#{restore_param} is not a valid backup"
         end
       end
     end

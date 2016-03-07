@@ -15,6 +15,7 @@ class TarRestore
   extend Forwardable
 
   attr_accessor :tarball_path
+  attr_writer :manifest
 
   def_delegators :@log, :log
 
@@ -26,7 +27,7 @@ class TarRestore
   def restore
     log 'Restoring Chef Server from backup'
     cleanse_chef_server(config['agree_to_cleanse'])
-    if manifest['topology'] == 'ha'
+    if ha?
       log 'Performing HA restore - please ensure that keepalived is not running on the standby host'
       fix_ha_plugins
       check_ha_volume
@@ -35,15 +36,17 @@ class TarRestore
     restore_configs
     restore_services unless frontend?
     touch_sentinel
+    reconfigure_marketplace if marketplace?
     reconfigure_server
     update_config
     import_db if restore_db_dump?
     start_chef_server
+    reconfigure_add_ons
+    restart_add_ons
     cleanup
     log 'Restoration Completed!'
   end
 
-  attr_writer :manifest
   def manifest
     @manifest ||= begin
       manifest = File.expand_path(File.join(ChefBackup::Config['restore_dir'],
@@ -73,15 +76,7 @@ class TarRestore
            "< #{sql_file}"
           ].join(' ')
     log 'Importing Database dump'
-    shell_out!(cmd)
-  end
-
-  def chpst
-    "#{base_install_dir}/embedded/bin/chpst"
-  end
-
-  def pgsql
-    "#{base_install_dir}/embedded/bin/psql"
+    shell_out!(cmd, env: ["PGOPTIONS=#{pg_options}"])
   end
 
   def restore_services
@@ -132,7 +127,7 @@ class TarRestore
     ha_data_dir = manifest['ha']['path']
 
     unless ha_data_dir_mounted?(ha_data_dir)
-      fail "Please mount the data directory #{ha_data_dir} and perform any DRBD configuration before continuing"
+      raise "Please mount the data directory #{ha_data_dir} and perform any DRBD configuration before continuing"
     end
   end
 
