@@ -18,4 +18,8 @@ Metrics/AbcSize:
   Max: 40
 AllCops:
   Exclude:
+    - 'lib/chef_backup/deep_merge.rb'
+    - 'lib/chef_backup/mash.rb'
+    - 'spec/unit/mash_spec.rb'
+    - 'spec/unit/deep_merge_spec.rb'
     - 'Guardfile'

@@ -5,11 +5,11 @@ require 'chef_backup'
 require 'bundler/setup'
 require 'json'
 require 'tempfile'
-require 'chef/mixin/deep_merge'
+require 'chef_backup/deep_merge'
 
 # Merge attributes into existing running_config
 def private_chef(*args)
-  Chef::Mixin::DeepMerge.deep_merge!(*args, ChefBackup::Config['private_chef'])
+  ChefBackup::Mixin::DeepMerge.deep_merge!(*args, ChefBackup::Config['private_chef'])
 end
 
 # Overwrite config with given attributes

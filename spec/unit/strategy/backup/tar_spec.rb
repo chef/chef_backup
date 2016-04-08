@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'chef/mixin/deep_merge'
+require 'chef_backup/deep_merge'
 require_relative 'shared_examples/backup'
 
 describe ChefBackup::Strategy::TarBackup do
