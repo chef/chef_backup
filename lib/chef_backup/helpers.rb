@@ -11,7 +11,7 @@ module Helpers
 
   SERVER_ADD_ONS = {
     'chef-manage' => {
-      'config_file' => '/etc/chef-manage/manage.rb',
+      'config_file' => '/var/opt/chef-manage/etc/settings.yml',
       'ctl_command' => 'chef-manage-ctl'
     },
     'opscode-manage' => {
