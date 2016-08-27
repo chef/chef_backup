@@ -28,4 +28,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'pry-rescue'
   spec.add_development_dependency 'rubocop', '~> 0.37.2'
   spec.add_development_dependency 'simplecov'
+  spec.add_development_dependency 'listen', '~> 3.0.0'
 end
