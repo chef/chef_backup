@@ -81,9 +81,7 @@ module Helpers
   end
 
   def shell_out(*command)
-    options = command_args.last.is_a?(Hash) ? command_args.pop : {}
-    opts_with_defaults = { 'timeout' => config['shell_out_timeout'] }.merge(options)
-    cmd = Mixlib::ShellOut.new(*command, opts_with_defaults)
+    cmd = Mixlib::ShellOut.new(*command)
     cmd.live_stream ||= $stdout.tty? ? $stdout : nil
     cmd.run_command
     cmd
