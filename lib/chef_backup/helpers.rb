@@ -69,6 +69,15 @@ module Helpers
     ChefBackup::Logger.logger.log(message, level)
   end
 
+  # For some reason, the restore codepath puts the shell_timeout flag at top
+  # level but the backup codepath puts it underneath the service_config
+  # hierarchy. Pick the one we find.
+  def shell_timeout
+    option = service_config['backup']['shell_out_timeout'] ||
+             config['shell_out_timeout']
+    option.to_f unless option.nil?
+  end
+
   #
   # @param file [String] A path to a file on disk
   # @param exception [Exception] An exception to raise if file is not present
@@ -81,8 +90,8 @@ module Helpers
   end
 
   def shell_out(*command)
-    options = command_args.last.is_a?(Hash) ? command_args.pop : {}
-    opts_with_defaults = { 'timeout' => config['shell_out_timeout'] }.merge(options)
+    options = command.last.is_a?(Hash) ? command.pop : {}
+    opts_with_defaults = { 'timeout' => shell_timeout }.merge(options)
     cmd = Mixlib::ShellOut.new(*command, opts_with_defaults)
     cmd.live_stream ||= $stdout.tty? ? $stdout : nil
     cmd.run_command
