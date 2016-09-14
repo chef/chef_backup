@@ -150,8 +150,9 @@ class TarRestore
     log 'Cleaning up any old files'
     # The chef-server-ctl cleanse command deliberately waits 60 seconds to give
     # you an option to cancel it.  Therefore, don't count it in the timeout that
-    # the user provided.
-    timeout = shell_timeout + 60 if shell_timeout
+    # the user provided.  If the user has eagerly dismissed that wait period,
+    # then don't elongate the timeout.  The user can do this with the -c flag.
+    timeout = shell_timeout + (agree ? 0 : 60) if shell_timeout
     shell_out!("#{ctl_command} cleanse #{agree || ''}", 'timeout' => timeout)
   end
 
