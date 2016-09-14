@@ -69,12 +69,16 @@ module Helpers
     ChefBackup::Logger.logger.log(message, level)
   end
 
-  # For some reason, the restore codepath puts the shell_timeout flag at top
-  # level but the backup codepath puts it underneath the service_config
-  # hierarchy. Pick the one we find.
+  # Note that when we are in the backup codepath, we have access to a running
+  # chef server and hence, the ctl command puts all our flags under the current
+  # running service namespace. The lets the default configuration of the server
+  # provide flags that the user doesn't necessarily provide on the command line.
+  #
+  # During the restore codepath, there may be no running chef server. This means
+  # that we need to be paranoid about the existence of the service_config hash.
   def shell_timeout
-    option = service_config['backup']['shell_out_timeout'] ||
-             config['shell_out_timeout']
+    option = config['shell_out_timeout'] ||
+             (service_config && service_config['backup']['shell_out_timeout'])
     option.to_f unless option.nil?
   end
 
@@ -125,7 +129,9 @@ module Helpers
   end
 
   def pg_options
-    config['pg_options'] || DEFAULT_PG_OPTIONS
+    config['pg_options'] ||
+      (service_config && service_config['backup']['pg_options']) ||
+      DEFAULT_PG_OPTIONS
   end
 
   def all_services
