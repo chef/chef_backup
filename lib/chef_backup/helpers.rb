@@ -69,6 +69,19 @@ module Helpers
     ChefBackup::Logger.logger.log(message, level)
   end
 
+  # Note that when we are in the backup codepath, we have access to a running
+  # chef server and hence, the ctl command puts all our flags under the current
+  # running service namespace. The lets the default configuration of the server
+  # provide flags that the user doesn't necessarily provide on the command line.
+  #
+  # During the restore codepath, there may be no running chef server. This means
+  # that we need to be paranoid about the existence of the service_config hash.
+  def shell_timeout
+    option = config['shell_out_timeout'] ||
+             (service_config && service_config['backup']['shell_out_timeout'])
+    option.to_f unless option.nil?
+  end
+
   #
   # @param file [String] A path to a file on disk
   # @param exception [Exception] An exception to raise if file is not present
@@ -81,8 +94,8 @@ module Helpers
   end
 
   def shell_out(*command)
-    options = command_args.last.is_a?(Hash) ? command_args.pop : {}
-    opts_with_defaults = { 'timeout' => config['shell_out_timeout'] }.merge(options)
+    options = command.last.is_a?(Hash) ? command.pop : {}
+    opts_with_defaults = { 'timeout' => shell_timeout }.merge(options)
     cmd = Mixlib::ShellOut.new(*command, opts_with_defaults)
     cmd.live_stream ||= $stdout.tty? ? $stdout : nil
     cmd.run_command
@@ -116,7 +129,9 @@ module Helpers
   end
 
   def pg_options
-    config['pg_options'] || DEFAULT_PG_OPTIONS
+    config['pg_options'] ||
+      (service_config && service_config['backup']['pg_options']) ||
+      DEFAULT_PG_OPTIONS
   end
 
   def all_services
