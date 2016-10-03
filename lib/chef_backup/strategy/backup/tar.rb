@@ -85,6 +85,12 @@ class TarBackup
       data_map.add_config(config, "/etc/#{config}")
     end
 
+    project_names.each do |project|
+      dir = addon_install_dir(project)
+      path = File.join(dir ,"/version-manifest.json")
+      data_map.add_version(project, version_from_manifest_file(path) )
+    end
+
     # Don't forget the upgrades!
     if service_config.key?('upgrades')
       data_map.add_service('upgrades', service_config['upgrades']['dir'])
@@ -127,6 +133,10 @@ class TarBackup
 
   def config_directories
     [project_name] + enabled_addons.keys
+  end
+
+  def project_names
+    ([project_name] + enabled_addons.keys).uniq
   end
 
   # The data_map is a working record of all of the data that is backed up.

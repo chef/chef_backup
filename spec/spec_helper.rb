@@ -67,6 +67,10 @@ def set_common_variables
         'opscode-manage' => {
           'data_dir' => '/etc/opscode-manage'
         }
+      },
+      versions: {
+        'opscode' => {'version'=>"12.9.1", 'revision'=>"aa7b99ac81ff4c018a0081e9a273b87b15342f12", 'path'=>"/opt/opscode/version-manifest.json"},
+        'opscode-manage' => {'version'=>"1.2.3", 'revision'=>"deadbeef", 'path'=>"/opt/opscode-manage/version-manifest.json"}
       }
     )
   end

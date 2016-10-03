@@ -26,6 +26,7 @@ class TarRestore
 
   def restore
     log 'Restoring Chef Server from backup'
+    return unless check_manifest_version
     cleanse_chef_server(config['agree_to_cleanse'])
     if ha?
       log 'Performing HA restore - please ensure that keepalived is not running on the standby host'
@@ -112,6 +113,27 @@ class TarRestore
     @backup_name ||= Pathname.new(tarball_path).basename.sub_ext('').to_s
   end
 
+  def check_manifest_version
+    if !manifest['versions']
+      log 'no version information in manifest'
+      return true
+    end
+
+    manifest['versions'].each_pair do |name, data|
+      installed = version_from_manifest_file(data['path'])
+
+      if installed == :no_version
+        log "Warning: #{name} @ #{data['version']} not installed"
+      else
+        if (installed['version'] != data['version'])
+          log "package #{name} #{installed['version']} installed, but backup was from #{data['version']}. Please install correct version, restore, then upgrade."
+          return false
+        end
+      end
+    end
+    true
+  end
+
   def fix_ha_plugins
     log 'Fixing HA plugins directory (https://github.com/chef/chef-server/issues/115)'
     plugins_dir = '/var/opt/opscode/plugins'
@@ -164,6 +186,6 @@ class TarRestore
   def update_config
     ChefBackup::Config.config = deep_merge(config.dup, running_config)
   end
-end # Tar
+  end # Tar
 end # Strategy
 end # ChefBackup

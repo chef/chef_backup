@@ -1,4 +1,5 @@
 require 'fileutils'
+require 'json'
 require 'mixlib/shellout'
 require 'chef_backup/config'
 require 'chef_backup/logger'
@@ -27,7 +28,7 @@ module Helpers
       'ctl_command' => 'opscode-analytics-ctl'
     },
     'chef-ha' => {
-      'config_file' => 'etc/opscode/chef-server.rb'
+      'config_file' => '/etc/opscode/chef-server.rb'
     },
     'chef-sync' => {
       'config_file' => '/etc/chef-sync/chef-sync.rb',
@@ -116,6 +117,11 @@ module Helpers
     "/opt/#{project_name}"
   end
 
+  def addon_install_dir(name)
+    # can use extra field in SERVER_ADD_ONS to extend if someone isn't following this pattern.
+    "/opt/#{name}"
+  end
+
   def base_config_dir
     "/etc/#{project_name}"
   end
@@ -194,9 +200,10 @@ module Helpers
   end
 
   def enabled_addons
-    SERVER_ADD_ONS.select do |_name, config|
+    SERVER_ADD_ONS.select do |name, config|
       begin
-        File.directory?(File.dirname(config['config_file']))
+        File.directory?(addon_install_dir(name)) &&
+          File.directory?(File.dirname(config['config_file']))
       rescue
         false
       end
@@ -257,6 +264,20 @@ module Helpers
     FileUtils.rm_r(tmp_dir)
   rescue Errno::ENOENT
     true
+  end
+
+  def version_from_manifest_file(file)
+    return :no_version if file.nil?
+
+    path = File.expand_path(file)
+    if File.exist?(path)
+      config = JSON.parse(File.read(path))
+      { 'version' => config['build_version'],
+        'revision' => config['build_git_revision'],
+        'path' => path }
+    else
+      :no_version
+    end
   end
 
   private

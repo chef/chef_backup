@@ -11,11 +11,12 @@ module ChefBackup
       attr_writer :data_map
     end
 
-    attr_accessor :strategy, :backup_time, :topology, :configs, :services, :ha
+    attr_accessor :strategy, :backup_time, :topology, :configs, :services, :ha, :versions
 
     def initialize
       @services = {}
       @configs = {}
+      @versions = {}
       @ha = {}
       yield self if block_given?
 
@@ -31,7 +32,11 @@ module ChefBackup
 
     def add_config(config, path)
       @configs[config] ||= {}
-      @configs[config]['data_dir'] = path
+      @configs[config]['config'] = path
+    end
+
+    def add_version(project_name, data)
+      @versions[project_name] = data
     end
 
     def add_ha_info(k, v)
@@ -45,7 +50,8 @@ module ChefBackup
         'topology' => topology,
         'ha' => ha,
         'services' => services,
-        'configs' => configs
+        'configs' => configs,
+        'versions' => versions
       }
     end
   end
