@@ -4,6 +4,7 @@ require 'mixlib/shellout'
 require 'chef_backup/config'
 require 'chef_backup/logger'
 
+# rubocop:disable ModuleLength
 # rubocop:disable IndentationWidth
 module ChefBackup
 # Common helper methods that are usefull in many classes

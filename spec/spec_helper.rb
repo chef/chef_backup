@@ -34,6 +34,38 @@ def clear_config
   ChefBackup::Config.config = {}
 end
 
+def data_map_data
+  {
+    services: {
+      'postgresql' => {
+        'data_dir' => '/var/opt/opscode/postgresql_9.2/data'
+      },
+      'couchdb' => {
+        'data_dir' => '/var/opt/opscode/couchdb/data'
+      },
+      'rabbitmq' => {
+        'data_dir' => '/var/opt/opscode/rabbitdb/data'
+      }
+    },
+    configs: {
+      'opscode' => {
+        'data_dir' => '/etc/opscode'
+      },
+      'opscode-manage' => {
+        'data_dir' => '/etc/opscode-manage'
+      }
+    },
+    versions: {
+      'opscode' => { 'version' => '12.9.1',
+                     'revision' => 'aa7b99ac81ff4c018a0081e9a273b87b15342f12',
+                     'path' => '/opt/opscode/version-manifest.json' },
+      'opscode-manage' => { 'version' => '1.2.3',
+                            'revision' => 'deadbeef',
+                            'path' => '/opt/opscode-manage/version-manifest.json' }
+    }
+  }
+end
+
 def set_common_variables
   let(:backup_tarball) { '/tmp/chef-backup-2014-12-10-20-31-40.tgz' }
   let(:backup_time) { '2014-08-21T23:10:57-07:00' }
@@ -47,32 +79,7 @@ def set_common_variables
   end
   let(:enabled_services) { all_services }
   let(:data_map) do
-    double(
-      'DataMap',
-      services: {
-        'postgresql' => {
-          'data_dir' => '/var/opt/opscode/postgresql_9.2/data'
-        },
-        'couchdb' => {
-          'data_dir' => '/var/opt/opscode/couchdb/data'
-        },
-        'rabbitmq' => {
-          'data_dir' => '/var/opt/opscode/rabbitdb/data'
-        }
-      },
-      configs: {
-        'opscode' => {
-          'data_dir' => '/etc/opscode'
-        },
-        'opscode-manage' => {
-          'data_dir' => '/etc/opscode-manage'
-        }
-      },
-      versions: {
-        'opscode' => {'version'=>"12.9.1", 'revision'=>"aa7b99ac81ff4c018a0081e9a273b87b15342f12", 'path'=>"/opt/opscode/version-manifest.json"},
-        'opscode-manage' => {'version'=>"1.2.3", 'revision'=>"deadbeef", 'path'=>"/opt/opscode-manage/version-manifest.json"}
-      }
-    )
+    double('DataMap', data_map_data)
   end
 end
 

@@ -114,7 +114,7 @@ class TarRestore
   end
 
   def check_manifest_version
-    if !manifest['versions']
+    unless manifest['versions']
       log 'no version information in manifest'
       return true
     end
@@ -124,11 +124,10 @@ class TarRestore
 
       if installed == :no_version
         log "Warning: #{name} @ #{data['version']} not installed"
-      else
-        if (installed['version'] != data['version'])
-          log "package #{name} #{installed['version']} installed, but backup was from #{data['version']}. Please install correct version, restore, then upgrade."
-          return false
-        end
+      elsif installed['version'] != data['version']
+        log "package #{name} #{installed['version']} installed, but backup was"\
+            " from #{data['version']}. Please install correct version, restore, then upgrade."
+        return false
       end
     end
     true
@@ -186,6 +185,6 @@ class TarRestore
   def update_config
     ChefBackup::Config.config = deep_merge(config.dup, running_config)
   end
-  end # Tar
+end # Tar
 end # Strategy
 end # ChefBackup

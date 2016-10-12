@@ -22,4 +22,5 @@ AllCops:
     - 'lib/chef_backup/mash.rb'
     - 'spec/unit/mash_spec.rb'
     - 'spec/unit/deep_merge_spec.rb'
+    - 'vendor/**/*'
     - 'Guardfile'

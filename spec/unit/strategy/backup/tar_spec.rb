@@ -226,7 +226,9 @@ describe ChefBackup::Strategy::TarBackup do
     let(:configs) { %w(opscode opscode-manage opscode-analytics) }
     let(:versions) do
       {
-        'opscode' => {'version'=>"12.9.1", 'revision'=>"aa7b99ac81ff4c018a0081e9a273b87b15342f12", 'path'=>"/opt/opscode/version-manifest.json"},
+        'opscode' => { 'version' => '12.9.1',
+                       'revision' => 'aa7b99ac81ff4c018a0081e9a273b87b15342f12',
+                       'path' => '/opt/opscode/version-manifest.json' },
         'opscode-manage' => :no_version,
         'opscode-analytics' => :no_version
       }
@@ -292,25 +294,22 @@ describe ChefBackup::Strategy::TarBackup do
         private_chef('role' => 'standalone', 'backup' => { 'config_only' => true })
         data_mock = double('DataMap')
         allow(subject).to receive(:data_map).and_return(data_mock)
-        allow_any_instance_of(ChefBackup::Helpers).to receive(:version_from_manifest_file)
-                                                       .and_return(:version_stub)
-        allow(subject).to receive(:enabled_addons)
-                           .and_return( { 'opscode' => nil,
-                                          'opscode-manage' => nil,
-                                          'opscode-analytics' => nil})
+        allow_any_instance_of(ChefBackup::Helpers)
+          .to receive(:version_from_manifest_file).and_return(:version_stub)
+        allow(subject).to receive(:enabled_addons).and_return('opscode' => nil,
+                                                              'opscode-manage' => nil,
+                                                              'opscode-analytics' => nil)
       end
 
       it 'populates the data map with config and upgrade directories only' do
         configs.each do |config|
           expect(subject.data_map)
-            .to receive(:add_config)
-                 .with(config, "/etc/#{config}")
+            .to receive(:add_config).with(config, "/etc/#{config}")
         end
 
         versions.keys.each do |version|
           expect(subject.data_map)
-            .to receive(:add_version)
-                 .with(version, :version_stub)
+            .to receive(:add_version).with(version, :version_stub)
         end
 
         expect(subject.data_map)

@@ -25,10 +25,14 @@ describe ChefBackup::Strategy::TarRestore do
         'opscode-analytics' => { 'data_dir' => '/etc/opscode-analytics' }
       },
       'versions' => {
-        'opscode' => { 'version' => '1.2.3', 'revision' => 'deadbeef11', 'path' => '/opt/opscode/version_manifest.json' },
-        'opscode-manage' => { 'version' => '4.5.6', 'revision' => 'deadbeef12', 'path' => '/opt/opscode-manage/version_manifest.json' },
-        'opscode-reporting' => { 'version' => '7.8.9', 'revision' => 'deadbeef13', 'path' => '/opt/opscode-reporting/version_manifest.json' },
-        'opscode-analytics' => { 'version' => '10.11.12', 'revision'  => 'abcdef1234', 'path' => '/opt/opscode-analytics/version_manifest.json' }
+        'opscode' => { 'version' => '1.2.3', 'revision' => 'deadbeef11',
+                       'path' => '/opt/opscode/version_manifest.json' },
+        'opscode-manage' => { 'version' => '4.5.6', 'revision' => 'deadbeef12',
+                              'path' => '/opt/opscode-manage/version_manifest.json' },
+        'opscode-reporting' => { 'version' => '7.8.9', 'revision' => 'deadbeef13',
+                                 'path' => '/opt/opscode-reporting/version_manifest.json' },
+        'opscode-analytics' => { 'version' => '10.11.12', 'revision' => 'abcdef1234',
+                                 'path' => '/opt/opscode-analytics/version_manifest.json' }
 
       }
     }
@@ -200,9 +204,8 @@ describe ChefBackup::Strategy::TarRestore do
 
   describe '.check_manifest_version' do
     let(:manifest_messages) do
-      manifest['versions'].values.inject({}) do |a, v|
+      manifest['versions'].values.each_with_object({}) do |v, a|
         a[v['path']] = v
-        a
       end
     end
 
@@ -212,8 +215,8 @@ describe ChefBackup::Strategy::TarRestore do
 
     it 'succeeds if installed software is same version' do
       manifest['versions'].values.each do |v|
-        allow_any_instance_of(ChefBackup::Helpers).to receive(:version_from_manifest_file).
-                                       with(v['path']).and_return(v)
+        allow_any_instance_of(ChefBackup::Helpers)
+          .to receive(:version_from_manifest_file).with(v['path']).and_return(v)
       end
       expect(subject.check_manifest_version).to be true
     end
@@ -221,15 +224,15 @@ describe ChefBackup::Strategy::TarRestore do
       manifest['versions'].values.each do |v|
         vmod = v.clone
         vmod['version'] = '0.0.0'
-        allow_any_instance_of(ChefBackup::Helpers).to receive(:version_from_manifest_file).
-                                       with(v['path']).and_return(vmod)
+        allow_any_instance_of(ChefBackup::Helpers)
+          .to receive(:version_from_manifest_file).with(v['path']).and_return(vmod)
       end
 
       expect(subject.check_manifest_version).to be false
     end
     it 'warns if installed software is missing' do
       messages = Marshal.load(Marshal.dump(manifest_messages))
-      messages["/opt/opscode-manage/version_manifest.json"] = :no_version
+      messages['/opt/opscode-manage/version_manifest.json'] = :no_version
 
       allow_any_instance_of(ChefBackup::Helpers).to receive(:version_from_manifest_file) do |p|
         messages[p]
@@ -243,13 +246,12 @@ describe ChefBackup::Strategy::TarRestore do
       allow(subject).to receive(:manifest).and_return(mod_manifest)
 
       manifest['versions'].values.each do |v|
-        allow_any_instance_of(ChefBackup::Helpers).to receive(:version_from_manifest_file).
-                                       with(v['path']).and_return(:no_version)
+        allow_any_instance_of(ChefBackup::Helpers)
+          .to receive(:version_from_manifest_file).with(v['path']).and_return(:no_version)
       end
       expect(subject.check_manifest_version).to be true
     end
   end
-
 
   describe '.import_db' do
     let(:pg_options) { ["PGOPTIONS=#{ChefBackup::Helpers::DEFAULT_PG_OPTIONS}"] }

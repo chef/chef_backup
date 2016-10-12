@@ -31,7 +31,7 @@ describe ChefBackup::DataMap do
   end
 
   describe '.add_version' do
-     subject { described_class.new }
+    subject { described_class.new }
 
     it 'adds a version' do
       subject.add_version('opscode-manage', :no_version)
@@ -39,7 +39,6 @@ describe ChefBackup::DataMap do
       expect(subject.versions['opscode-manage']).to eq(:no_version)
     end
   end
-
 
   describe '.manifest' do
     subject do

@@ -87,23 +87,21 @@ describe ChefBackup::Helpers do
   end
 
   describe '.version_from_manifest_file' do
-    before do
-      @filepath = File.expand_path('../../fixtures/manifest-stub.json', __FILE__)
+    let(:filepath) do
+      filepath = File.expand_path('../../fixtures/manifest-stub.json', __FILE__)
+      filepath
     end
-
     it 'can read data out of a manifest' do
-      expect(subject.version_from_manifest_file(@filepath)).
-        to eq( 'version' => "1.4.0",  'revision' => "18af6b292bd4422d514ac83af6ad2b760662c21a",
-               'path' => "/home/vagrant/chef-server/omnibus/pkg/chef_backup/spec/fixtures/manifest-stub.json")
+      expect(subject.version_from_manifest_file(filepath))
+        .to eq('version' => '100.50.0',
+               'revision' => '18af6b292bd4422d514ac83af6ad2b760662c21a',
+               'path' => filepath)
     end
     it 'returns :no_version when missing one' do
-      expect(subject.version_from_manifest_file("/nonesuchfile")).
-        to eq( :no_version )
+      expect(subject.version_from_manifest_file('/nonesuchfile')).to eq(:no_version)
     end
     it 'returns :no_version when given nil' do
-      expect(subject.version_from_manifest_file(nil)).
-        to eq( :no_version )
+      expect(subject.version_from_manifest_file(nil)).to eq(:no_version)
     end
-
   end
 end
