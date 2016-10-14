@@ -202,12 +202,9 @@ module Helpers
 
   def enabled_addons
     SERVER_ADD_ONS.select do |name, config|
-      begin
-        File.directory?(addon_install_dir(name)) &&
-          File.directory?(File.dirname(config['config_file']))
-      rescue
-        false
-      end
+      !config['config_file'].nil? &&
+        File.directory?(File.dirname(config['config_file'])) &&
+        File.directory?(addon_install_dir(name))
     end
   end
 
