@@ -1,0 +1,6 @@
+{
+  "manifest_format": 2,
+  "build_version": "100.50.0",
+  "build_git_revision": "18af6b292bd4422d514ac83af6ad2b760662c21a",
+  "license": "Chef MLSA"
+}

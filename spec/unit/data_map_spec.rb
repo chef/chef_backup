@@ -25,8 +25,18 @@ describe ChefBackup::DataMap do
     it 'adds a config' do
       subject.add_config('opscode-manage', '/opscode-manage/path')
       expect(subject.configs.keys.count).to eq(1)
-      expect(subject.configs['opscode-manage']['data_dir'])
+      expect(subject.configs['opscode-manage']['config'])
         .to eq('/opscode-manage/path')
+    end
+  end
+
+  describe '.add_version' do
+    subject { described_class.new }
+
+    it 'adds a version' do
+      subject.add_version('opscode-manage', :no_version)
+      expect(subject.versions.keys.count).to eq(1)
+      expect(subject.versions['opscode-manage']).to eq(:no_version)
     end
   end
 

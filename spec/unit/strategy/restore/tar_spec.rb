@@ -23,6 +23,17 @@ describe ChefBackup::Strategy::TarRestore do
         'opscode-manage' => { 'data_dir' => '/etc/opscode-manage' },
         'opscode-reporting' => { 'data_dir' => '/etc/opscode-reporting' },
         'opscode-analytics' => { 'data_dir' => '/etc/opscode-analytics' }
+      },
+      'versions' => {
+        'opscode' => { 'version' => '1.2.3', 'revision' => 'deadbeef11',
+                       'path' => '/opt/opscode/version_manifest.json' },
+        'opscode-manage' => { 'version' => '4.5.6', 'revision' => 'deadbeef12',
+                              'path' => '/opt/opscode-manage/version_manifest.json' },
+        'opscode-reporting' => { 'version' => '7.8.9', 'revision' => 'deadbeef13',
+                                 'path' => '/opt/opscode-reporting/version_manifest.json' },
+        'opscode-analytics' => { 'version' => '10.11.12', 'revision' => 'abcdef1234',
+                                 'path' => '/opt/opscode-analytics/version_manifest.json' }
+
       }
     }
   end
@@ -188,6 +199,57 @@ describe ChefBackup::Strategy::TarRestore do
         expect(subject).to receive(:shell_out!).with(cmd)
         subject.restore_data(:services, 'rabbitmq')
       end
+    end
+  end
+
+  describe '.check_manifest_version' do
+    let(:manifest_messages) do
+      manifest['versions'].values.each_with_object({}) do |v, a|
+        a[v['path']] = v
+      end
+    end
+
+    before do
+      allow(subject).to receive(:manifest).and_return(manifest)
+    end
+
+    it 'succeeds if installed software is same version' do
+      manifest['versions'].values.each do |v|
+        allow_any_instance_of(ChefBackup::Helpers)
+          .to receive(:version_from_manifest_file).with(v['path']).and_return(v)
+      end
+      expect(subject.check_manifest_version).to be true
+    end
+    it 'fails if installed software is different version' do
+      manifest['versions'].values.each do |v|
+        vmod = v.clone
+        vmod['version'] = '0.0.0'
+        allow_any_instance_of(ChefBackup::Helpers)
+          .to receive(:version_from_manifest_file).with(v['path']).and_return(vmod)
+      end
+
+      expect(subject.check_manifest_version).to be false
+    end
+    it 'warns if installed software is missing' do
+      messages = Marshal.load(Marshal.dump(manifest_messages))
+      messages['/opt/opscode-manage/version_manifest.json'] = :no_version
+
+      allow_any_instance_of(ChefBackup::Helpers).to receive(:version_from_manifest_file) do |p|
+        messages[p]
+      end
+
+      expect(subject.check_manifest_version).to be true
+    end
+    it 'it warns if missing' do
+      mod_manifest = Marshal.load(Marshal.dump(manifest))
+      mod_manifest['versions'].delete('opscode-reporting')
+      allow(subject).to receive(:manifest).and_return(mod_manifest)
+
+      manifest['versions'].values.each do |v|
+        allow_any_instance_of(ChefBackup::Helpers)
+          .to receive(:version_from_manifest_file).with(v['path']).and_return(:no_version)
+      end
+      expect(subject.check_manifest_version).to be true
     end
   end
 
