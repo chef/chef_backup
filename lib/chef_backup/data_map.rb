@@ -32,7 +32,7 @@ module ChefBackup
 
     def add_config(config, path)
       @configs[config] ||= {}
-      @configs[config]['config'] = path
+      @configs[config]['data_dir'] = path
     end
 
     def add_version(project_name, data)
