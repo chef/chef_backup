@@ -25,7 +25,7 @@ describe ChefBackup::DataMap do
     it 'adds a config' do
       subject.add_config('opscode-manage', '/opscode-manage/path')
       expect(subject.configs.keys.count).to eq(1)
-      expect(subject.configs['opscode-manage']['config'])
+      expect(subject.configs['opscode-manage']['data_dir'])
         .to eq('/opscode-manage/path')
     end
   end
