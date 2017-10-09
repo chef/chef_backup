@@ -183,8 +183,8 @@ describe ChefBackup::Strategy::TarBackup do
       cmd = "rsync -chaz #{tmp_dir}/chef-backup-#{backup_time}.tgz"
       cmd << " #{export_dir}/"
 
-      allow(subject).to receive(:shell_out).with(cmd)
-      expect(subject).to receive(:shell_out).with(cmd)
+      allow(subject).to receive(:shell_out!).with(cmd)
+      expect(subject).to receive(:shell_out!).with(cmd)
       subject.export_tarball
     end
   end
