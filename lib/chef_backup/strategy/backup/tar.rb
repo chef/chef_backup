@@ -198,7 +198,7 @@ class TarBackup
       Dir["#{tmp_dir}/*"].map { |f| File.basename(f) }.join(' ')
     ].join(' ').strip
 
-    res = shell_out(cmd, cwd: tmp_dir)
+    res = shell_out!(cmd, cwd: tmp_dir)
     res
   end
 
@@ -206,7 +206,7 @@ class TarBackup
     log "Exporting tarball to #{export_dir}"
     cmd = "rsync -chaz #{tmp_dir}/#{export_filename} #{export_dir}/"
 
-    res = shell_out(cmd)
+    res = shell_out!(cmd)
     res
   end
 
