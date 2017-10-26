@@ -198,7 +198,7 @@ class TarBackup
       Dir["#{tmp_dir}/*"].map { |f| File.basename(f) }.join(' ')
     ].join(' ').strip
 
-    res = shell_out(cmd, cwd: tmp_dir)
+    res = shell_out!(cmd, cwd: tmp_dir)
     res
   end
 

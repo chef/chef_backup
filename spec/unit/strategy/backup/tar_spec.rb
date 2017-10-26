@@ -168,8 +168,8 @@ describe ChefBackup::Strategy::TarBackup do
         Dir["#{tmp_dir}/*"].map { |f| File.basename(f) }.join(' ')
       ].join(' ').strip
 
-      allow(subject).to receive(:shell_out).with(cmd, cdw: tmp_dir)
-      expect(subject).to receive(:shell_out).with(cmd, cwd: tmp_dir)
+      allow(subject).to receive(:shell_out!).with(cmd, cdw: tmp_dir)
+      expect(subject).to receive(:shell_out!).with(cmd, cwd: tmp_dir)
       subject.create_tarball
     end
   end
