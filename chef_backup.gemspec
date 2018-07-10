@@ -11,15 +11,16 @@ Gem::Specification.new do |spec|
   spec.summary       = 'A library to backup a Chef Server'
   spec.description   = spec.summary
   spec.homepage      = 'https://github.com/chef/chef_backup'
-  spec.license       = 'Apachev2'
+  spec.license       = 'Apache-2.0'
 
   spec.files         = `git ls-files -z`.split("\x0")
   spec.executables   = spec.files.grep(/^bin/) { |f| File.basename(f) }
   spec.test_files    = spec.files.grep(/^(test|spec|features)/)
   spec.require_paths = ['lib']
 
-  spec.add_dependency 'mixlib-shellout'
-  spec.add_dependency 'highline'
+  # These pins match those in chef (at least as of 14.2.0)
+  spec.add_dependency 'mixlib-shellout', '~> 2.0'
+  spec.add_dependency 'highline', '~> 1.6', '>= 1.6.9'
 
   spec.add_development_dependency 'bundler', '~> 1.6'
   spec.add_development_dependency 'rainbow', '< 2.2.0'
