@@ -12,6 +12,10 @@ module Helpers
   # rubocop:enable IndentationWidth
 
   SERVER_ADD_ONS = {
+    'chef-manage' => {
+      'config_file' => '/var/opt/chef-manage/etc/settings.yml',
+      'ctl_command' => 'chef-manage-ctl'
+    },
     'opscode-manage' => {
       'config_file' => '/etc/opscode-manage/manage.rb',
       'ctl_command' => 'opscode-manage-ctl'
