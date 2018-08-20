@@ -182,7 +182,7 @@ class TarBackup
     cleanup
     log 'Backup Complete!'
   rescue => e
-    log "Something wen't terribly wrong, aborting backup", :error
+    log "Something went terribly wrong, aborting backup", :error
     log e.message, :error
     cleanup
     start_chef_server
