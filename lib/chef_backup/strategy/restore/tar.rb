@@ -74,8 +74,7 @@ class TarRestore
            pgsql,
            "-U #{manifest['services']['postgresql']['username']}",
            "-d #{database_name}",
-           "< #{sql_file}"
-          ].join(' ')
+           "< #{sql_file}"].join(' ')
     log 'Importing Database dump'
     shell_out!(cmd, env: ["PGOPTIONS=#{pg_options}"])
   end

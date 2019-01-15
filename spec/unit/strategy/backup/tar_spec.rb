@@ -15,9 +15,8 @@ describe ChefBackup::Strategy::TarBackup do
 
   describe '.backup' do
     before do
-      %i(write_manifest dump_db stop_service create_tarball cleanup
-         start_service export_tarball
-      ).each do |method|
+      %i[write_manifest dump_db stop_service create_tarball cleanup
+         start_service export_tarball].each do |method|
         allow(subject).to receive(method).and_return(true)
       end
 
@@ -103,8 +102,7 @@ describe ChefBackup::Strategy::TarBackup do
       ['/opt/opscode/embedded/bin/chpst',
        '-u opscode-pgsql',
        '/opt/opscode/embedded/bin/pg_dumpall',
-       "> #{tmp_dir}/chef_backup-#{backup_time}.sql"
-      ].join(' ')
+       "> #{tmp_dir}/chef_backup-#{backup_time}.sql"].join(' ')
     end
 
     let(:pg_options) { ["PGOPTIONS=#{ChefBackup::Helpers::DEFAULT_PG_OPTIONS}"] }
@@ -119,7 +117,7 @@ describe ChefBackup::Strategy::TarBackup do
       subject.data_map.add_service('postgresql', '/data/dir')
     end
 
-    %w(backend standalone).each do |role|
+    %w[backend standalone].each do |role|
       context "on a #{role}" do
         before do
           private_chef('role' => role)
@@ -157,7 +155,7 @@ describe ChefBackup::Strategy::TarBackup do
   describe '.create_tarball' do
     before do
       allow(subject).to receive(:data_map).and_return(data_map)
-      allow(Dir).to receive(:[]).and_return(%w(sql.sql manifest.json))
+      allow(Dir).to receive(:[]).and_return(%w[sql.sql manifest.json])
     end
 
     it 'creates a tarball with all items in the temp directory' do
@@ -197,8 +195,7 @@ describe ChefBackup::Strategy::TarBackup do
             'hash' => true
           },
           'another' => true
-        }
-      }
+        } }
     end
 
     let(:file) { double('file', write: true) }
@@ -222,8 +219,8 @@ describe ChefBackup::Strategy::TarBackup do
   end
 
   describe '.populate_data_map' do
-    let(:services) { %w(opscode-solr4 bookshelf rabbitmq) }
-    let(:configs) { %w(opscode opscode-manage opscode-analytics) }
+    let(:services) { %w[opscode-solr4 bookshelf rabbitmq] }
+    let(:configs) { %w[opscode opscode-manage opscode-analytics] }
     let(:versions) do
       {
         'opscode' => { 'version' => '12.9.1',
@@ -236,20 +233,19 @@ describe ChefBackup::Strategy::TarBackup do
     let(:config) do
       { 'bookshelf' => { 'data_dir' => '/bookshelf/data' },
         'opscode-solr4' => { 'data_dir' => '/solr4/data' },
-        'rabbitmq' => { 'data_dir' => '/rabbitmq/data' }
-      }
+        'rabbitmq' => { 'data_dir' => '/rabbitmq/data' } }
     end
 
     before do
       allow(subject).to receive(:data_map).and_return(data_map)
       allow(subject).to receive(:stateful_services).and_return(services)
       allow(subject).to receive(:config_directories).and_return(configs)
-      %w(add_service add_config add_ha_info add_version).each do |method|
+      %w[add_service add_config add_ha_info add_version].each do |method|
         allow(data_map).to receive(method.to_sym).and_return(true)
       end
     end
 
-    %w(frontend backend standalone).each do |role|
+    %w[frontend backend standalone].each do |role|
       context "on a #{role}" do
         before { private_chef(config.merge('role' => role)) }
 
@@ -265,7 +261,7 @@ describe ChefBackup::Strategy::TarBackup do
       end
     end
 
-    %w(backend standalone).each do |role|
+    %w[backend standalone].each do |role|
       context "on a #{role}" do
         before { private_chef(config.merge('role' => role)) }
 

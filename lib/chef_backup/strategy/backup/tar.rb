@@ -56,8 +56,7 @@ class TarBackup
     cmd = [chpst,
            "-u #{pg_user}",
            pg_dumpall,
-           "> #{sql_file}"
-          ].join(' ')
+           "> #{sql_file}"].join(' ')
     log "Dumping Postgresql database to #{sql_file}"
     shell_out!(cmd, env: ["PGOPTIONS=#{pg_options}"])
     data_map.services['postgresql']['pg_dump_success'] = true
@@ -121,12 +120,12 @@ class TarBackup
     end
   end
 
-  DEFAULT_STATEFUL_SERVICES = %w(rabbitmq
+  DEFAULT_STATEFUL_SERVICES = %w[rabbitmq
                                  opscode-solr4
                                  elasticsearch
                                  redis_lb
                                  postgresql
-                                 bookshelf).freeze
+                                 bookshelf].freeze
 
   def stateful_services
     if service_config.key?('drbd') && service_config['drbd']['enable'] == true
@@ -167,7 +166,7 @@ class TarBackup
     if backend? && !config_only?
       if !online?
         ask_to_go_offline unless offline_permission_granted?
-        stop_chef_server(except: [:keepalived, :postgresql])
+        stop_chef_server(except: %i[keepalived postgresql])
         dump_db
         stop_service(:postgresql)
         stopped = true

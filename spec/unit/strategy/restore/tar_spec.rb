@@ -34,8 +34,7 @@ describe ChefBackup::Strategy::TarRestore do
         'opscode-analytics' => { 'version' => '10.11.12', 'revision' => 'abcdef1234',
                                  'path' => '/opt/opscode-analytics/version_manifest.json' }
 
-      }
-    }
+      } }
   end
 
   let(:pg_dump_success) { true }
@@ -50,10 +49,9 @@ describe ChefBackup::Strategy::TarRestore do
 
   describe '.restore' do
     before do
-      %i(shell_out shell_out! unpack_tarball stop_chef_server ensure_file!
+      %i[shell_out shell_out! unpack_tarball stop_chef_server ensure_file!
          start_chef_server reconfigure_server cleanse_chef_server
-         update_config import_db touch_sentinel restart_add_ons
-      ).each do |method|
+         update_config import_db touch_sentinel restart_add_ons].each do |method|
         allow(subject).to receive(method).and_return(true)
       end
       configs.each do |config|
@@ -180,7 +178,8 @@ describe ChefBackup::Strategy::TarRestore do
     context 'with config data' do
       it 'rsyncs the config from the restore dir to the data_dir' do
         source = File.expand_path(
-          File.join(restore_dir, manifest['configs']['opscode']['data_dir']))
+          File.join(restore_dir, manifest['configs']['opscode']['data_dir'])
+        )
         destination = manifest['configs']['opscode']['data_dir']
         cmd = "rsync -chaz --delete #{source}/ #{destination}"
 
@@ -192,7 +191,8 @@ describe ChefBackup::Strategy::TarRestore do
     context 'with service data' do
       it 'rsyncs the service from the restore dir to the data_dir' do
         source = File.expand_path(
-          File.join(restore_dir, manifest['services']['rabbitmq']['data_dir']))
+          File.join(restore_dir, manifest['services']['rabbitmq']['data_dir'])
+        )
         destination = manifest['services']['rabbitmq']['data_dir']
         cmd = "rsync -chaz --delete #{source}/ #{destination}"
 
@@ -279,8 +279,7 @@ describe ChefBackup::Strategy::TarRestore do
       let(:import_cmd) do
         ['/opt/opscode/embedded/bin/chpst -u opscode-pgsql',
          '/opt/opscode/embedded/bin/psql -U opscode-pgsql',
-         "-d opscode_chef < #{db_sql}"
-        ].join(' ')
+         "-d opscode_chef < #{db_sql}"].join(' ')
       end
 
       before do

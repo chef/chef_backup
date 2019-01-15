@@ -16,6 +16,8 @@ Metrics/MethodLength:
   Max: 40
 Metrics/AbcSize:
   Max: 40
+Metrics/BlockLength:
+  Max: 400
 AllCops:
   Exclude:
     - 'lib/chef_backup/deep_merge.rb'
@@ -24,3 +26,5 @@ AllCops:
     - 'spec/unit/deep_merge_spec.rb'
     - 'vendor/**/*'
     - 'Guardfile'
+    - 'lib/chef_backup/helpers.rb'
+    - 'lib/chef_backup/strategy/backup/tar.rb'

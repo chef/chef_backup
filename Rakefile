@@ -9,7 +9,7 @@ require 'bundler/gem_tasks'
 require 'rubocop/rake_task'
 
 desc 'Default task to run spec suite'
-task default: %w(spec rubocop)
+task default: %w[spec rubocop]
 
 desc 'Run spec suite'
 RSpec::Core::RakeTask.new(:spec) do |task|
