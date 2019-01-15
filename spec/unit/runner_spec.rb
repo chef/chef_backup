@@ -75,14 +75,14 @@ describe ChefBackup::Runner do
     context 'when the restore directory already exists' do
       before do
         allow(File).to receive(:directory?).and_return(true)
-        allow(Dir).to receive(:glob).and_return(%w(a b c))
+        allow(Dir).to receive(:glob).and_return(%w[a b c])
         allow(FileUtils).to receive(:rm_r).and_return(true)
       end
 
       it 'cleans the restore directory' do
         # The directory needs to exist but has not been set in the config
         ChefBackup::Config['restore_dir'] = nil
-        expect(FileUtils).to receive(:rm_r).with(%w(a b c))
+        expect(FileUtils).to receive(:rm_r).with(%w[a b c])
         subject.restore_directory
       end
 

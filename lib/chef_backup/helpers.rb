@@ -150,7 +150,7 @@ module Helpers
   end
 
   def disabled_services
-    all_services.select { |sv| !service_enabled?(sv) }
+    all_services.reject { |sv| service_enabled?(sv) }
   end
 
   def service_enabled?(service)

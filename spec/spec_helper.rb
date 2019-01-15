@@ -73,9 +73,8 @@ def set_common_variables
   let(:strategy) { 'test' }
   let(:export_dir) { '/mnt/chef-backups' }
   let(:all_services) do
-    %w(nginx oc_bifrost oc_id opscode-erchef opscode-expander
-       opscode-expander-reindexer opscode-solr4 postgresql rabbitmq redis_lb
-    )
+    %w[nginx oc_bifrost oc_id opscode-erchef opscode-expander
+       opscode-expander-reindexer opscode-solr4 postgresql rabbitmq redis_lb]
   end
   let(:enabled_services) { all_services }
   let(:data_map) do

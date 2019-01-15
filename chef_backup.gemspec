@@ -1,4 +1,5 @@
 # coding: utf-8
+
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'chef_backup/version'
@@ -28,6 +29,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rspec', '~> 3.0'
   spec.add_development_dependency 'guard-rspec'
   spec.add_development_dependency 'pry-rescue'
-  spec.add_development_dependency 'rubocop', '~> 0.37.2'
+  spec.add_development_dependency 'rubocop'
   spec.add_development_dependency 'simplecov'
 end

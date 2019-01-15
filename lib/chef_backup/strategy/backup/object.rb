@@ -21,9 +21,7 @@ class ChefBackup::Strategy::ObjectBackup < ChefBackup::Strategy::TarBackup
     cleanup
   end
 
-  def verify_object
-  end
+  def verify_object; end
 
-  def knife_ec_backup
-  end
+  def knife_ec_backup; end
 end

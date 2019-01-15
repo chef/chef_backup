@@ -4,14 +4,12 @@ describe ChefBackup::Strategy do
   before do
     # Backup Tester
     class ChefBackup::Strategy::TestBackup
-      def initialize(_p = {})
-      end
+      def initialize(_p = {}); end
     end
 
     # Restore Tester
     class ChefBackup::Strategy::TestRestore
-      def initialize(_p = {})
-      end
+      def initialize(_p = {}); end
     end
   end
 

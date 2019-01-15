@@ -17,12 +17,9 @@ class ChefBackup::Strategy::EbsBackup < ChefBackup::Strategy::TarBackup
     cleanup
   end
 
-  def verify_ebs
-  end
+  def verify_ebs; end
 
-  def take_ebs_snapshot
-  end
+  def take_ebs_snapshot; end
 
-  def copy_opscode_config
-  end
+  def copy_opscode_config; end
 end

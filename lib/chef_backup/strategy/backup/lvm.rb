@@ -34,9 +34,7 @@ class ChefBackup::Strategy::LvmBackup < ChefBackup::Strategy::TarBackup
     # warn if vg space is low
   end
 
-  def take_lvm_snapshot
-  end
+  def take_lvm_snapshot; end
 
-  def mount_lvm_snapshot
-  end
+  def mount_lvm_snapshot; end
 end
