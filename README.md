@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.org/chef/chef_backup.svg?branch=master)](https://travis-ci.org/chef/chef_backup)
 [![Gem Version](https://badge.fury.io/rb/chef_backup.svg)](http://badge.fury.io/rb/chef_backup)
 
-A gem that backs up and restores Chef servers.  Used as the backend for
+A gem that backs up and restores Chef Infra Servers.  Used as the backend for
 `chef-server-ctl backup` and `chef-server-ctl restore`
 
 ## Usage
