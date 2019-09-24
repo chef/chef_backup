@@ -13,6 +13,7 @@ group :test do
   gem "chefstyle"
   gem "rake"
   gem "rspec", "~> 3.0"
+  gem "simplecov"
 end
 
 group :docs do
