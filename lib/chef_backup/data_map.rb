@@ -1,4 +1,4 @@
-require 'time'
+require "time"
 
 module ChefBackup
   # DataMap class to store data about the data we're backing up
@@ -21,18 +21,18 @@ module ChefBackup
       yield self if block_given?
 
       @backup_time ||= Time.now.iso8601
-      @strategy ||= 'none'
-      @toplogy ||= 'idontknow'
+      @strategy ||= "none"
+      @toplogy ||= "idontknow"
     end
 
     def add_service(service, data_dir)
       @services[service] ||= {}
-      @services[service]['data_dir'] = data_dir
+      @services[service]["data_dir"] = data_dir
     end
 
     def add_config(config, path)
       @configs[config] ||= {}
-      @configs[config]['data_dir'] = path
+      @configs[config]["data_dir"] = path
     end
 
     def add_version(project_name, data)
@@ -45,13 +45,13 @@ module ChefBackup
 
     def manifest
       {
-        'strategy' => strategy,
-        'backup_time' => backup_time,
-        'topology' => topology,
-        'ha' => ha,
-        'services' => services,
-        'configs' => configs,
-        'versions' => versions
+        "strategy" => strategy,
+        "backup_time" => backup_time,
+        "topology" => topology,
+        "ha" => ha,
+        "services" => services,
+        "configs" => configs,
+        "versions" => versions,
       }
     end
   end

@@ -1,4 +1,4 @@
-require 'highline'
+require "highline"
 
 module ChefBackup
   # Basic Logging Class
@@ -15,7 +15,7 @@ module ChefBackup
     attr_accessor :stdout
 
     def initialize(logfile = nil)
-      $stdout = logfile ? File.open(logfile, 'ab') : $stdout
+      $stdout = logfile ? File.open(logfile, "ab") : $stdout
       @highline = HighLine.new($stdin, $stdout)
     end
 

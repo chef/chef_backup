@@ -2,16 +2,16 @@
 #
 # All Rights Reserved
 
-require 'chef_backup/strategy/backup/tar'
-require 'chef_backup/strategy/backup/lvm'
-require 'chef_backup/strategy/backup/ebs'
-require 'chef_backup/strategy/backup/object'
-require 'chef_backup/strategy/backup/custom'
-require 'chef_backup/strategy/restore/tar'
-require 'chef_backup/strategy/restore/lvm'
-require 'chef_backup/strategy/restore/ebs'
-require 'chef_backup/strategy/restore/object'
-require 'chef_backup/strategy/restore/custom'
+require "chef_backup/strategy/backup/tar"
+require "chef_backup/strategy/backup/lvm"
+require "chef_backup/strategy/backup/ebs"
+require "chef_backup/strategy/backup/object"
+require "chef_backup/strategy/backup/custom"
+require "chef_backup/strategy/restore/tar"
+require "chef_backup/strategy/restore/lvm"
+require "chef_backup/strategy/restore/ebs"
+require "chef_backup/strategy/restore/object"
+require "chef_backup/strategy/restore/custom"
 
 module ChefBackup
   # ChefBackup::Strategy factory returns an ChefBackup::Strategy object

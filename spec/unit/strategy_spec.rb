@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "spec_helper"
 
 describe ChefBackup::Strategy do
   before do
@@ -18,16 +18,16 @@ describe ChefBackup::Strategy do
     described_class.send(:remove_const, :TestRestore)
   end
 
-  describe '.backup' do
-    it 'it returns a backup strategy' do
-      expect(described_class.backup('test'))
+  describe ".backup" do
+    it "it returns a backup strategy" do
+      expect(described_class.backup("test"))
         .to be_an(ChefBackup::Strategy::TestBackup)
     end
   end
 
-  describe '.restore' do
-    it 'it returns a restore strategy' do
-      expect(described_class.restore('test', '/some/backup.tgz'))
+  describe ".restore" do
+    it "it returns a restore strategy" do
+      expect(described_class.restore("test", "/some/backup.tgz"))
         .to be_an(ChefBackup::Strategy::TestRestore)
     end
   end
