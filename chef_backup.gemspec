@@ -14,9 +14,7 @@ Gem::Specification.new do |spec|
   spec.homepage      = "https://github.com/chef/chef_backup"
   spec.license       = "Apache-2.0"
 
-  spec.files         = `git ls-files -z`.split("\x0")
-  spec.executables   = spec.files.grep(/^bin/) { |f| File.basename(f) }
-  spec.test_files    = spec.files.grep(/^(test|spec|features)/)
+  spec.files         = %w{LICENSE} + Dir.glob("lib/**/*")
   spec.require_paths = ["lib"]
 
   spec.add_dependency "mixlib-shellout", ">= 2.0", "< 4.0"
