@@ -11,6 +11,9 @@
 
 #### Merged Pull Requests
 - Add docs, fix expeditor setup, get builds passing in Buildkite [#35](https://github.com/chef/chef_backup/pull/35) ([tas50](https://github.com/tas50))
+- Applied chefstyle rules
+- Migrated testing to Buildkite and gem management to Expeditor
+- Slimmed the gem by not shipping test files with the gem package
 <!-- latest_stable_release -->
 
 ## v0.0.1
