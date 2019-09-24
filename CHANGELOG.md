@@ -14,6 +14,8 @@
 - Applied chefstyle rules
 - Migrated testing to Buildkite and gem management to Expeditor
 - Slimmed the gem by not shipping test files with the gem package
+- Moved dev deps to the Gemfile
+- Loosened the mixlib-shellout dep to allow mixlib-shellout 3.x
 <!-- latest_stable_release -->
 
 ## v0.0.1
