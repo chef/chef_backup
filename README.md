@@ -1,5 +1,5 @@
 # ChefBackup
-[![Build Status](https://travis-ci.org/chef/chef_backup.svg?branch=master)](https://travis-ci.org/chef/chef_backup)
+[![Build status](https://badge.buildkite.com/3006bd14f3d0d2281c9e323b9e33adb2a9373e6a319a5e6f13.svg?branch=master)](https://buildkite.com/chef-oss/chef-chef-backup-master-verify)
 [![Gem Version](https://badge.fury.io/rb/chef_backup.svg)](http://badge.fury.io/rb/chef_backup)
 
 A gem that backs up and restores Chef Infra Servers.  Used as the backend for
