@@ -7,8 +7,6 @@ module ChefBackup
     include ChefBackup::Helpers
     include ChefBackup::Exceptions
 
-    attr_reader :restore_param
-
     #
     # @param running_config [Hash] A hash of the private-chef-running.json
     #   or the CLI args for a restore
