@@ -1,9 +1,17 @@
 # chef_backup change log
 
-<!-- latest_release -->
+<!-- latest_release 0.1.1 -->
+## [v0.1.1](https://github.com/chef/chef_backup/tree/v0.1.1) (2019-09-24)
+
+#### Merged Pull Requests
+- Fixed a typo in error message [#30](https://github.com/chef/chef_backup/pull/30) ([1dustindavis](https://github.com/1dustindavis))
 <!-- latest_release -->
 
-<!-- release_rollup -->
+<!-- release_rollup since=0.1.0 -->
+### Changes not yet released to rubygems.org
+
+#### Merged Pull Requests
+- Fixed a typo in error message [#30](https://github.com/chef/chef_backup/pull/30) ([1dustindavis](https://github.com/1dustindavis)) <!-- 0.1.1 -->
 <!-- release_rollup -->
 
 <!-- latest_stable_release -->
