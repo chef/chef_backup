@@ -1,13 +1,11 @@
-require 'fileutils'
-require 'pathname'
+require "fileutils"
+require "pathname"
 
 module ChefBackup
   # ChefBackup::Runner class initializes the strategy and runs the action
   class Runner
     include ChefBackup::Helpers
     include ChefBackup::Exceptions
-
-    attr_reader :restore_param
 
     #
     # @param running_config [Hash] A hash of the private-chef-running.json
@@ -17,7 +15,7 @@ module ChefBackup
     #
     def initialize(running_config)
       ChefBackup::Config.config = running_config
-      ChefBackup::Logger.logger(service_config['backup']['logfile'] || nil)
+      ChefBackup::Logger.logger(service_config["backup"]["logfile"] || nil)
     end
 
     #
@@ -47,7 +45,7 @@ module ChefBackup
     # @return [String] String name of the configured backup strategy
     #
     def backup_strategy
-      service_config['backup']['strategy']
+      service_config["backup"]["strategy"]
     end
 
     #
@@ -55,7 +53,7 @@ module ChefBackup
     #   or a path to a tarball
     #
     def restore_param
-      config['restore_param']
+      config["restore_param"]
     end
 
     #
@@ -65,9 +63,9 @@ module ChefBackup
       @restore_strategy ||= begin
         if tarball?
           unpack_tarball
-          manifest['strategy']
+          manifest["strategy"]
         elsif ebs_snapshot?
-          'ebs'
+          "ebs"
         else
           raise InvalidStrategy, "#{restore_param} is not a valid backup"
         end
@@ -79,7 +77,7 @@ module ChefBackup
     #
     def tarball?
       file = Pathname.new(File.expand_path(restore_param))
-      file.exist? && file.extname == '.tgz'
+      file.exist? && file.extname == ".tgz"
     end
 
     #
@@ -104,7 +102,7 @@ module ChefBackup
     #
     def backup_name
       if tarball?
-        Pathname.new(restore_param).basename.sub_ext('').to_s
+        Pathname.new(restore_param).basename.sub_ext("").to_s
       elsif ebs_snapshot?
         restore_param
       end
@@ -117,7 +115,7 @@ module ChefBackup
     # @return [String] A path to the restore directory
     #
     def restore_directory
-      config['restore_dir'] ||= begin
+      config["restore_dir"] ||= begin
         dir_name = File.join(tmp_dir, backup_name)
         if File.directory?(dir_name)
           # clean restore directory if it exists
@@ -135,7 +133,7 @@ module ChefBackup
     def manifest
       @manifest ||= begin
         file = "#{restore_directory}/manifest.json"
-        ensure_file!(file, InvalidTarball, 'No manifest found in tarball')
+        ensure_file!(file, InvalidTarball, "No manifest found in tarball")
         JSON.parse(File.read(file))
       end
     end
