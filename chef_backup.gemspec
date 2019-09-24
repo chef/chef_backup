@@ -19,9 +19,8 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(/^(test|spec|features)/)
   spec.require_paths = ['lib']
 
-  # These pins match those in chef (at least as of 14.2.0)
-  spec.add_dependency 'mixlib-shellout', '~> 2.0'
-  spec.add_dependency 'highline', '~> 1.6', '>= 1.6.9'
+  spec.add_dependency "mixlib-shellout", ">= 2.0", "< 4.0"
+  spec.add_dependency "highline", "~> 1.6", ">= 1.6.9"
 
   spec.add_development_dependency 'bundler'
   spec.add_development_dependency 'rainbow', '< 2.2.0'
