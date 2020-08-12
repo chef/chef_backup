@@ -3,6 +3,7 @@ require "pathname" unless defined?(Pathname)
 require "forwardable" unless defined?(Forwardable)
 require "chef-utils/dist" unless defined?(ChefUtils::Dist)
 require "chef_backup/deep_merge"
+require "chef"
 
 # rubocop:disable IndentationWidth
 module ChefBackup
@@ -26,7 +27,7 @@ class TarRestore
   end
 
   def restore
-    log "Restoring Chef Server from backup"
+    log "Restoring #{Chef::Dist::SERVER_PRODUCT} from backup"
     return unless check_manifest_version
 
     cleanse_chef_server(config["agree_to_cleanse"])
@@ -68,7 +69,7 @@ class TarRestore
   def import_db
     start_service("postgresql")
     sql_file = File.join(ChefBackup::Config["restore_dir"],
-      "chef_backup-#{manifest["backup_time"]}.sql")
+      "#{ChefConfig::Dist::SHORT}_backup-#{manifest["backup_time"]}.sql")
     ensure_file!(sql_file, InvalidDatabaseDump, "#{sql_file} not found")
 
     cmd = [chpst,
@@ -164,7 +165,7 @@ class TarRestore
   end
 
   def reconfigure_server
-    log "Reconfiguring the Chef Server"
+    log "Reconfiguring the #{Chef::Dist::SERVER_PRODUCT}"
     shell_out("#{ctl_command} reconfigure")
   end
 

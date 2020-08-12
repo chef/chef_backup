@@ -169,14 +169,14 @@ module Helpers
   end
 
   def stop_chef_server(params = {})
-    log 'Bringing down the Chef Server'
+    log "Bringing down the #{Chef::Dist::SERVER_PRODUCT}"
     services = enabled_services
     services -= params[:except].map(&:to_s) if params.key?(:except)
     services.each { |sv| stop_service(sv) }
   end
 
   def start_chef_server
-    log 'Bringing up the Chef Server'
+    log "Bringing up the #{Chef::Dist::SERVER_PRODUCT}"
     enabled_services.each { |sv| start_service(sv) }
   end
 
@@ -253,7 +253,7 @@ module Helpers
         FileUtils.mkdir_p(dir) unless File.directory?(dir)
         dir
       else
-        Dir.mktmpdir('chef_backup')
+        Dir.mktmpdir("#{ChefConfig::Dist::SHORT}_backup")
       end
     end
   end
