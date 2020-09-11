@@ -1,4 +1,4 @@
-require "time"
+require "time" unless defined?(Time.zone_offset)
 
 module ChefBackup
   # DataMap class to store data about the data we're backing up

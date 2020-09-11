@@ -1,5 +1,5 @@
-require "fileutils"
-require "pathname"
+require "fileutils" unless defined?(FileUtils)
+require "pathname" unless defined?(Pathname)
 
 module ChefBackup
   # ChefBackup::Runner class initializes the strategy and runs the action

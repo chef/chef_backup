@@ -6,7 +6,11 @@ gemspec
 group :debug do
   gem "pry"
   gem "pry-rescue"
-  gem "pry-stack_explorer"
+  if Gem::Version.new(RUBY_VERSION) < Gem::Version.new("2.6")
+    gem "pry-stack_explorer", "~> 0.4.11"
+  else
+    gem "pry-stack_explorer"
+  end
 end
 
 group :test do
