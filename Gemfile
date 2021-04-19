@@ -6,7 +6,6 @@ gemspec
 group :debug do
   gem "pry"
   gem "pry-rescue"
-  gem "pry-stack_explorer"
 end
 
 group :test do
@@ -14,10 +13,4 @@ group :test do
   gem "rake"
   gem "rspec", "~> 3.0"
   gem "simplecov"
-end
-
-group :docs do
-  gem "github-markup"
-  gem "redcarpet"
-  gem "yard"
 end

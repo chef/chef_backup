@@ -1,54 +1,54 @@
-require 'fileutils'
-require 'json'
-require 'mixlib/shellout'
-require 'chef_backup/config'
-require 'chef_backup/logger'
+require "fileutils" unless defined?(FileUtils)
+require "json" unless defined?(JSON)
+require "mixlib/shellout" unless defined?(Mixlib::ShellOut)
+require "chef_backup/config"
+require "chef_backup/logger"
 
-# rubocop:disable ModuleLength
-# rubocop:disable IndentationWidth
+# rubocop:disable Metrics/ModuleLength
+# rubocop:disable Layout/IndentationWidth
 module ChefBackup
 # Common helper methods that are usefull in many classes
 module Helpers
-  # rubocop:enable IndentationWidth
+  # rubocop:enable Layout/IndentationWidth
 
   SERVER_ADD_ONS = {
-    'opscode-manage' => {
-      'config_file' => '/etc/opscode-manage/manage.rb',
-      'ctl_command' => 'opscode-manage-ctl'
+    "opscode-manage" => {
+      "config_file" => "/etc/opscode-manage/manage.rb",
+      "ctl_command" => "opscode-manage-ctl",
     },
-    'opscode-reporting' => {
-      'config_file' => '/etc/opscode-reporting/opscode-reporting.rb',
-      'ctl_command' => 'opscode-reporting-ctl'
+    "opscode-reporting" => {
+      "config_file" => "/etc/opscode-reporting/opscode-reporting.rb",
+      "ctl_command" => "opscode-reporting-ctl",
     },
-    'opscode-push-jobs-server' => {
-      'config_file' => '/etc/opscode-push-jobs-server/opscode-push-jobs-server.rb',
-      'ctl_command' => 'opscode-push-jobs-server-ctl'
+    "opscode-push-jobs-server" => {
+      "config_file" => "/etc/opscode-push-jobs-server/opscode-push-jobs-server.rb",
+      "ctl_command" => "opscode-push-jobs-server-ctl",
     },
-    'opscode-analytics' => {
-      'config_file' => '/etc/opscode-analytics/opscode-analytics.rb',
-      'ctl_command' => 'opscode-analytics-ctl'
+    "opscode-analytics" => {
+      "config_file" => "/etc/opscode-analytics/opscode-analytics.rb",
+      "ctl_command" => "opscode-analytics-ctl",
     },
-    'chef-ha' => {
-      'config_file' => '/etc/opscode/chef-server.rb'
+    "chef-ha" => {
+      "config_file" => "/etc/opscode/chef-server.rb",
     },
-    'chef-sync' => {
-      'config_file' => '/etc/chef-sync/chef-sync.rb',
-      'ctl_command' => 'chef-sync-ctl'
+    "chef-sync" => {
+      "config_file" => "/etc/chef-sync/chef-sync.rb",
+      "ctl_command" => "chef-sync-ctl",
     },
-    'chef-marketplace' => {
-      'config_file' => '/etc/chef-marketplace/marketplace.rb',
-      'ctl_command' => 'chef-marketplace-ctl'
-    }
+    "chef-marketplace" => {
+      "config_file" => "/etc/chef-marketplace/marketplace.rb",
+      "ctl_command" => "chef-marketplace-ctl",
+    },
   }.freeze
 
-  DEFAULT_PG_OPTIONS = '-c statement_timeout=3600000'.freeze
+  DEFAULT_PG_OPTIONS = "-c statement_timeout=3600000".freeze
 
   def config
     ChefBackup::Config
   end
 
   def config_base
-    ChefBackup::Config['config_base']
+    ChefBackup::Config["config_base"]
   end
 
   def service_config
@@ -56,15 +56,15 @@ module Helpers
   end
 
   def ctl_command
-    service_config['backup']['ctl-command']
+    service_config["backup"]["ctl-command"]
   end
 
   def running_filepath
-    service_config['backup']['running_filepath']
+    service_config["backup"]["running_filepath"]
   end
 
   def database_name
-    service_config['backup']['database_name']
+    service_config["backup"]["database_name"]
   end
 
   def log(message, level = :info)
@@ -79,8 +79,8 @@ module Helpers
   # During the restore codepath, there may be no running chef server. This means
   # that we need to be paranoid about the existence of the service_config hash.
   def shell_timeout
-    option = config['shell_out_timeout'] ||
-             (service_config && service_config['backup']['shell_out_timeout'])
+    option = config["shell_out_timeout"] ||
+      (service_config && service_config["backup"]["shell_out_timeout"])
     option.to_f unless option.nil?
   end
 
@@ -97,7 +97,7 @@ module Helpers
 
   def shell_out(*command)
     options = command.last.is_a?(Hash) ? command.pop : {}
-    opts_with_defaults = { 'timeout' => shell_timeout }.merge(options)
+    opts_with_defaults = { "timeout" => shell_timeout }.merge(options)
     cmd = Mixlib::ShellOut.new(*command, opts_with_defaults)
     cmd.live_stream ||= $stdout.tty? ? $stdout : nil
     cmd.run_command
@@ -111,7 +111,7 @@ module Helpers
   end
 
   def project_name
-    service_config['backup']['project_name']
+    service_config["backup"]["project_name"]
   end
 
   def base_install_dir
@@ -136,8 +136,8 @@ module Helpers
   end
 
   def pg_options
-    config['pg_options'] ||
-      (service_config && service_config['backup']['pg_options']) ||
+    config["pg_options"] ||
+      (service_config && service_config["backup"]["pg_options"]) ||
       DEFAULT_PG_OPTIONS
   end
 
@@ -168,14 +168,14 @@ module Helpers
   end
 
   def stop_chef_server(params = {})
-    log 'Bringing down the Chef Server'
+    log "Bringing down the Chef Server"
     services = enabled_services
     services -= params[:except].map(&:to_s) if params.key?(:except)
     services.each { |sv| stop_service(sv) }
   end
 
   def start_chef_server
-    log 'Bringing up the Chef Server'
+    log "Bringing up the Chef Server"
     enabled_services.each { |sv| start_service(sv) }
   end
 
@@ -185,74 +185,74 @@ module Helpers
 
   def reconfigure_add_ons
     enabled_addons.each do |_name, config|
-      shell_out("#{config['ctl_command']} reconfigure") if config.key?('ctl_command')
+      shell_out("#{config["ctl_command"]} reconfigure") if config.key?("ctl_command")
     end
   end
 
   def restart_add_ons
     enabled_addons.each do |_name, config|
-      shell_out("#{config['ctl_command']} restart") if config.key?('ctl_command')
+      shell_out("#{config["ctl_command"]} restart") if config.key?("ctl_command")
     end
   end
 
   def reconfigure_marketplace
-    log 'Setting up Chef Marketplace'
-    shell_out('chef-marketplace-ctl reconfigure')
+    log "Setting up Chef Marketplace"
+    shell_out("chef-marketplace-ctl reconfigure")
   end
 
   def enabled_addons
     SERVER_ADD_ONS.select do |name, config|
-      !config['config_file'].nil? &&
-        File.directory?(File.dirname(config['config_file'])) &&
+      !config["config_file"].nil? &&
+        File.directory?(File.dirname(config["config_file"])) &&
         File.directory?(addon_install_dir(name))
     end
   end
 
   def strategy
-    service_config['backup']['strategy']
+    service_config["backup"]["strategy"]
   end
 
   def topology
-    service_config['topology']
+    service_config["topology"]
   end
 
   def frontend?
-    service_config['role'] == 'frontend'
+    service_config["role"] == "frontend"
   end
 
   def backend?
-    service_config['role'] =~ /backend|standalone/
+    service_config["role"] =~ /backend|standalone/
   end
 
   def online?
-    service_config['backup']['mode'] == 'online'
+    service_config["backup"]["mode"] == "online"
   end
 
   def ha?
-    topology == 'ha'
+    topology == "ha"
   end
 
   def tier?
-    topology == 'tier'
+    topology == "tier"
   end
 
   def standalone?
-    topology == 'standalone'
+    topology == "standalone"
   end
 
   def marketplace?
-    shell_out('which chef-marketplace-ctl').exitstatus == 0
+    shell_out("which chef-marketplace-ctl").exitstatus == 0
   end
 
   def tmp_dir
     @tmp_dir ||= begin
-      dir = safe_key { config['tmp_dir'] } ||
-            safe_key { service_config['backup']['tmp_dir'] }
+      dir = safe_key { config["tmp_dir"] } ||
+        safe_key { service_config["backup"]["tmp_dir"] }
       if dir
         FileUtils.mkdir_p(dir) unless File.directory?(dir)
         dir
       else
-        Dir.mktmpdir('chef_backup')
+        Dir.mktmpdir("chef_backup")
       end
     end
   end
@@ -270,9 +270,9 @@ module Helpers
     path = File.expand_path(file)
     if File.exist?(path)
       config = JSON.parse(File.read(path))
-      { 'version' => config['build_version'],
-        'revision' => config['build_git_revision'],
-        'path' => path }
+      { "version" => config["build_version"],
+        "revision" => config["build_git_revision"],
+        "path" => path }
     else
       :no_version
     end

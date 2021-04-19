@@ -1,14 +1,14 @@
-require "fileutils"
-require "pathname"
-require "forwardable"
+require "fileutils" unless defined?(FileUtils)
+require "pathname" unless defined?(Pathname)
+require "forwardable" unless defined?(Forwardable)
 require "chef_backup/deep_merge"
 
-# rubocop:disable IndentationWidth
+# rubocop:disable Layout/IndentationWidth
 module ChefBackup
 module Strategy
 # Basic Tar Restore Strategy
 class TarRestore
-  # rubocop:enable IndentationWidth
+  # rubocop:enable Layout/IndentationWidth
   include ChefBackup::Helpers
   include ChefBackup::Exceptions
   include ChefBackup::Mixin::DeepMerge

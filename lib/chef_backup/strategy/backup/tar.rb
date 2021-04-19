@@ -1,22 +1,22 @@
-require 'fileutils'
-require 'json'
-require 'time'
-require 'highline/import'
+require "fileutils" unless defined?(FileUtils)
+require "json" unless defined?(JSON)
+require "time" unless defined?(Time.zone_offset)
+require "highline/import"
 
-# rubocop:disable IndentationWidth
+# rubocop:disable Layout/IndentationWidth
 module ChefBackup
 module Strategy
 # ChefBackup::Tar class.  Used to backup Standalone and Tier Servers that aren't
 # installed on LVM
 class TarBackup
-  # rubocop:enable IndentationWidth
+  # rubocop:enable Layout/IndentationWidth
   include ChefBackup::Helpers
   include ChefBackup::Exceptions
 
   attr_reader :backup_time
 
   def initialize
-    @backup_time = Time.now.strftime('%Y-%m-%d-%H-%M-%S')
+    @backup_time = Time.now.strftime("%Y-%m-%d-%H-%M-%S")
   end
 
   #
@@ -27,13 +27,13 @@ class TarBackup
   def export_dir
     @export_dir ||= begin
       dir =
-        if service_config['backup']['export_dir']
-          service_config['backup']['export_dir']
+        if service_config["backup"]["export_dir"]
+          service_config["backup"]["export_dir"]
         else
           msg = ["backup['export_dir'] has not been set.",
-                 'defaulting to: /var/opt/chef-backups'].join(' ')
+                 "defaulting to: /var/opt/chef-backups"].join(" ")
           log(msg, :warn)
-          '/var/opt/chef-backups'
+          "/var/opt/chef-backups"
         end
       FileUtils.mkdir_p(dir) unless File.directory?(dir)
       dir
@@ -47,20 +47,21 @@ class TarBackup
   #
   def dump_db
     return true unless pg_dump?
+
     if external_pg?
-      log('Cannot backup external postgresql', :warn)
+      log("Cannot backup external postgresql", :warn)
       return false
     end
-    pg_user = service_config['postgresql']['username']
+    pg_user = service_config["postgresql"]["username"]
     sql_file = "#{tmp_dir}/chef_backup-#{backup_time}.sql"
     cmd = [chpst,
            "-u #{pg_user}",
            pg_dumpall,
-           "> #{sql_file}"].join(' ')
+           "> #{sql_file}"].join(" ")
     log "Dumping Postgresql database to #{sql_file}"
     shell_out!(cmd, env: ["PGOPTIONS=#{pg_options}"])
-    data_map.services['postgresql']['pg_dump_success'] = true
-    data_map.services['postgresql']['username'] = pg_user
+    data_map.services["postgresql"]["pg_dump_success"] = true
+    data_map.services["postgresql"]["username"] = pg_user
     true
   end
 
@@ -76,7 +77,8 @@ class TarBackup
     unless config_only?
       stateful_services.each do |service|
         next unless service_config.key?(service)
-        data_map.add_service(service, service_config[service]['data_dir'])
+
+        data_map.add_service(service, service_config[service]["data_dir"])
       end
     end
 
@@ -87,8 +89,8 @@ class TarBackup
     populate_versions
 
     # Don't forget the upgrades!
-    if service_config.key?('upgrades')
-      data_map.add_service('upgrades', service_config['upgrades']['dir'])
+    if service_config.key?("upgrades")
+      data_map.add_service("upgrades", service_config["upgrades"]["dir"])
     end
 
     add_ha_services
@@ -96,16 +98,16 @@ class TarBackup
 
   def populate_versions
     project_names.each do |project|
-      path = File.join(addon_install_dir(project), '/version-manifest.json')
+      path = File.join(addon_install_dir(project), "/version-manifest.json")
       data_map.add_version(project, version_from_manifest_file(path))
     end
   end
 
   def add_ha_services
     if ha? && !config_only?
-      data_map.add_service('keepalived', service_config['keepalived']['dir'])
-      data_map.add_ha_info('provider', service_config['ha']['provider'])
-      data_map.add_ha_info('path', service_config['ha']['path'])
+      data_map.add_service("keepalived", service_config["keepalived"]["dir"])
+      data_map.add_ha_info("provider", service_config["ha"]["provider"])
+      data_map.add_ha_info("path", service_config["ha"]["path"])
     end
   end
 
@@ -114,22 +116,22 @@ class TarBackup
   end
 
   def write_manifest
-    log 'Writing backup manifest'
-    File.open("#{tmp_dir}/manifest.json", 'w') do |file|
+    log "Writing backup manifest"
+    File.open("#{tmp_dir}/manifest.json", "w") do |file|
       file.write(JSON.pretty_generate(manifest))
     end
   end
 
-  DEFAULT_STATEFUL_SERVICES = %w[rabbitmq
+  DEFAULT_STATEFUL_SERVICES = %w{rabbitmq
                                  opscode-solr4
                                  elasticsearch
                                  redis_lb
                                  postgresql
-                                 bookshelf].freeze
+                                 bookshelf}.freeze
 
   def stateful_services
-    if service_config.key?('drbd') && service_config['drbd']['enable'] == true
-      ['drbd']
+    if service_config.key?("drbd") && service_config["drbd"]["enable"] == true
+      ["drbd"]
     else
       DEFAULT_STATEFUL_SERVICES.select do |service|
         service_enabled?(service)
@@ -160,13 +162,13 @@ class TarBackup
   end
 
   def backup
-    log "Starting Chef Server backup #{config_only? ? '(config only)' : ''}"
+    log "Starting Chef Server backup #{config_only? ? "(config only)" : ""}"
     populate_data_map
     stopped = false
     if backend? && !config_only?
       if !online?
         ask_to_go_offline unless offline_permission_granted?
-        stop_chef_server(except: %i[keepalived postgresql])
+        stop_chef_server(except: %i{keepalived postgresql})
         dump_db
         stop_service(:postgresql)
         stopped = true
@@ -179,7 +181,7 @@ class TarBackup
     start_chef_server if stopped
     export_tarball
     cleanup
-    log 'Backup Complete!'
+    log "Backup Complete!"
   rescue => e
     log "Something went terribly wrong, aborting backup", :error
     log e.message, :error
@@ -189,13 +191,13 @@ class TarBackup
   end
 
   def create_tarball
-    log 'Creating backup tarball'
+    log "Creating backup tarball"
     cmd = [
       "tar -czf #{tmp_dir}/#{export_filename}",
-      data_map.services.map { |_, v| v['data_dir'] }.compact.join(' '),
-      data_map.configs.map { |_, v| v['data_dir'] }.compact.join(' '),
-      Dir["#{tmp_dir}/*"].map { |f| File.basename(f) }.join(' ')
-    ].join(' ').strip
+      data_map.services.map { |_, v| v["data_dir"] }.compact.join(" "),
+      data_map.configs.map { |_, v| v["data_dir"] }.compact.join(" "),
+      Dir["#{tmp_dir}/*"].map { |f| File.basename(f) }.join(" "),
+    ].join(" ").strip
 
     res = shell_out!(cmd, cwd: tmp_dir)
     res
@@ -211,38 +213,38 @@ class TarBackup
 
   def export_filename
     postfix = if config_only?
-                '-config'
+                "-config"
               else
-                ''
+                ""
               end
     "chef-backup#{postfix}-#{backup_time}.tgz"
   end
 
   def service_enabled?(service)
-    service_config[service] && service_config[service]['enable'] && !service_config[service]['external']
+    service_config[service] && service_config[service]["enable"] && !service_config[service]["external"]
   end
 
   def external_pg?
-    service_config['postgresql']['external']
+    service_config["postgresql"]["external"]
   end
 
   def pg_dump?
     # defaults to true
-    service_config['backup']['always_dump_db']
+    service_config["backup"]["always_dump_db"]
   end
 
   def offline_permission_granted?
-    service_config['backup']['agree_to_go_offline']
+    service_config["backup"]["agree_to_go_offline"]
   end
 
   def config_only?
-    service_config['backup']['config_only']
+    service_config["backup"]["config_only"]
   end
 
   def ask_to_go_offline
-    msg = 'WARNING:  Offline backup mode must stop your Chef server before '
+    msg = "WARNING:  Offline backup mode must stop your Chef server before "
     msg << 'continuing.  You can skip this message by passing a "--yes" '
-    msg << 'argument. Do you wish to proceed? (y/N):'
+    msg << "argument. Do you wish to proceed? (y/N):"
 
     exit(1) unless ask(msg) =~ /^y/i
   end

@@ -33,7 +33,7 @@ task :console do
   require "pry"
   require "chef_backup"
   require "json"
-  f = File.expand_path("../spec/fixtures/chef-server-running.json", __FILE__)
+  f = File.expand_path("spec/fixtures/chef-server-running.json", __dir__)
   running_config = JSON.parse(File.read(f))
   @runner = ChefBackup::Runner.new(
     running_config.merge("restore_param" => "/tmp/backup.tgz")
