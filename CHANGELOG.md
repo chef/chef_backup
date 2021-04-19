@@ -1,20 +1,18 @@
 # chef_backup change log
 
-<!-- latest_release 0.1.1 -->
-## [v0.1.1](https://github.com/chef/chef_backup/tree/v0.1.1) (2019-09-24)
-
-#### Merged Pull Requests
-- Fixed a typo in error message [#30](https://github.com/chef/chef_backup/pull/30) ([1dustindavis](https://github.com/1dustindavis))
+<!-- latest_release -->
 <!-- latest_release -->
 
-<!-- release_rollup since=0.1.0 -->
-### Changes not yet released to rubygems.org
-
-#### Merged Pull Requests
-- Fixed a typo in error message [#30](https://github.com/chef/chef_backup/pull/30) ([1dustindavis](https://github.com/1dustindavis)) <!-- 0.1.1 -->
+<!-- release_rollup -->
 <!-- release_rollup -->
 
 <!-- latest_stable_release -->
+## [v0.1.1](https://github.com/chef/chef_backup/tree/v0.1.1) (2021-04-19)
+
+#### Merged Pull Requests
+- Fixed a typo in error message [#30](https://github.com/chef/chef_backup/pull/30) ([1dustindavis](https://github.com/1dustindavis))
+<!-- latest_stable_release -->
+
 ## [v0.1.0](https://github.com/chef/chef_backup/tree/v0.1.0) (2019-09-24)
 
 #### Merged Pull Requests
@@ -24,7 +22,6 @@
 - Slimmed the gem by not shipping test files with the gem package
 - Moved dev deps to the Gemfile
 - Loosened the mixlib-shellout dep to allow mixlib-shellout 3.x
-<!-- latest_stable_release -->
 
 ## v0.0.1
 
