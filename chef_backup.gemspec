@@ -18,5 +18,5 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "mixlib-shellout", ">= 2.0", "< 4.0"
-  spec.add_dependency "highline", "~> 1.6", ">= 1.6.9"
+  spec.add_dependency "pastel"
 end
