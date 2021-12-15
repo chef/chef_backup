@@ -1,5 +1,5 @@
-require "fileutils"
-require "pathname"
+require "fileutils" unless defined?(FileUtils)
+require "pathname" unless defined?(Pathname)
 
 module ChefBackup
   # ChefBackup::Runner class initializes the strategy and runs the action
@@ -60,16 +60,14 @@ module ChefBackup
     # @return [String] A path to backup tarball or EBS snapshot ID
     #
     def restore_strategy
-      @restore_strategy ||= begin
-        if tarball?
-          unpack_tarball
-          manifest["strategy"]
-        elsif ebs_snapshot?
-          "ebs"
-        else
-          raise InvalidStrategy, "#{restore_param} is not a valid backup"
-        end
-      end
+      @restore_strategy ||= if tarball?
+                              unpack_tarball
+                              manifest["strategy"]
+                            elsif ebs_snapshot?
+                              "ebs"
+                            else
+                              raise InvalidStrategy, "#{restore_param} is not a valid backup"
+                            end
     end
 
     #

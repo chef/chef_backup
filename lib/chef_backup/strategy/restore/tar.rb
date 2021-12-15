@@ -1,6 +1,6 @@
-require "fileutils"
-require "pathname"
-require "forwardable"
+require "fileutils" unless defined?(FileUtils)
+require "pathname" unless defined?(Pathname)
+require "forwardable" unless defined?(Forwardable)
 require "chef_backup/deep_merge"
 
 # rubocop:disable IndentationWidth
