@@ -19,4 +19,5 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "mixlib-shellout", ">= 2.0", "< 4.0"
   spec.add_dependency "pastel"
+  spec.add_dependency "tty-prompt", "~> 0.21"
 end
