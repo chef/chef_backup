@@ -1,9 +1,17 @@
 # chef_backup change log
 
-<!-- latest_release -->
+<!-- latest_release 0.2.0 -->
+## [v0.2.0](https://github.com/chef/chef_backup/tree/v0.2.0) (2021-12-17)
+
+#### Merged Pull Requests
+- Replace highline with pastel and tty-prompt [#40](https://github.com/chef/chef_backup/pull/40) ([btm](https://github.com/btm))
 <!-- latest_release -->
 
-<!-- release_rollup -->
+<!-- release_rollup since=0.1.1 -->
+### Changes not yet released to rubygems.org
+
+#### Merged Pull Requests
+- Replace highline with pastel and tty-prompt [#40](https://github.com/chef/chef_backup/pull/40) ([btm](https://github.com/btm)) <!-- 0.2.0 -->
 <!-- release_rollup -->
 
 <!-- latest_stable_release -->
