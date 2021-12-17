@@ -84,7 +84,7 @@ end
 
 def running_config
   @config ||= begin
-    f = File.expand_path("../fixtures/chef-server-running.json", __FILE__)
+    f = File.expand_path("fixtures/chef-server-running.json", __dir__)
     JSON.parse(File.read(f))
   end
   @config.dup

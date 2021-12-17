@@ -1,6 +1,4 @@
-# coding: utf-8
-
-lib = File.expand_path("../lib", __FILE__)
+lib = File.expand_path("lib", __dir__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require "chef_backup/version"
 
@@ -18,5 +16,6 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "mixlib-shellout", ">= 2.0", "< 4.0"
-  spec.add_dependency "highline", "~> 1.6", ">= 1.6.9"
+  spec.add_dependency "pastel"
+  spec.add_dependency "tty-prompt", "~> 0.21"
 end

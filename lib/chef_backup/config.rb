@@ -1,6 +1,6 @@
-require "fileutils"
-require "json"
-require "forwardable"
+require "fileutils" unless defined?(FileUtils)
+require "json" unless defined?(JSON)
+require "forwardable" unless defined?(Forwardable)
 
 module ChefBackup
   # ChefBackup Global Config

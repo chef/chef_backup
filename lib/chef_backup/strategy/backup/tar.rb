@@ -1,7 +1,6 @@
 require 'fileutils'
 require 'json'
 require 'time'
-require 'highline/import'
 
 # rubocop:disable IndentationWidth
 module ChefBackup
@@ -244,7 +243,8 @@ class TarBackup
     msg << 'continuing.  You can skip this message by passing a "--yes" '
     msg << 'argument. Do you wish to proceed? (y/N):'
 
-    exit(1) unless ask(msg) =~ /^y/i
+    require "tty-prompt" unless defined?(TTY::Prompt)
+    exit(1) unless TTY::Prompt.new(interrupt: :exit).ask(msg) =~ /^y/i
   end
 end
 end

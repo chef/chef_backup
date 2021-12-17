@@ -1,5 +1,3 @@
-require "highline"
-
 module ChefBackup
   # Basic Logging Class
   class Logger
@@ -16,17 +14,24 @@ module ChefBackup
 
     def initialize(logfile = nil)
       $stdout = logfile ? File.open(logfile, "ab") : $stdout
-      @highline = HighLine.new($stdin, $stdout)
+    end
+
+    # pastel.decorate is a lightweight replacement for highline.color
+    def pastel
+      @pastel ||= begin
+        require "pastel" unless defined?(Pastel)
+        Pastel.new
+      end
     end
 
     def log(msg, level = :info)
       case level
       when :warn
         msg = "WARNING: #{msg}"
-        $stdout.puts(color? ? @highline.color(msg, :yellow) : msg)
+        $stdout.puts(color? ? pastel.decorate(msg, :yellow) : msg)
       when :error
         msg = "ERROR: #{msg}"
-        $stdout.puts(color? ? @highline.color(msg, :red) : msg)
+        $stdout.puts(color? ? pastel.decorate(msg, :red) : msg)
       else
         $stdout.puts(msg)
       end

@@ -88,7 +88,7 @@ describe ChefBackup::Helpers do
 
   describe ".version_from_manifest_file" do
     let(:filepath) do
-      filepath = File.expand_path("../../fixtures/manifest-stub.json", __FILE__)
+      filepath = File.expand_path("../fixtures/manifest-stub.json", __dir__)
       filepath
     end
     it "can read data out of a manifest" do
