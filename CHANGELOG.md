@@ -1,9 +1,17 @@
 # chef_backup change log
 
-<!-- latest_release -->
+<!-- latest_release 0.3.0 -->
+## [v0.3.0](https://github.com/chef/chef_backup/tree/v0.3.0) (2022-01-26)
+
+#### Merged Pull Requests
+- Replace trademarks hardcodes with constants [#42](https://github.com/chef/chef_backup/pull/42) ([aleksey-hariton](https://github.com/aleksey-hariton))
 <!-- latest_release -->
 
-<!-- release_rollup -->
+<!-- release_rollup since=0.2.0 -->
+### Changes not yet released to rubygems.org
+
+#### Merged Pull Requests
+- Replace trademarks hardcodes with constants [#42](https://github.com/chef/chef_backup/pull/42) ([aleksey-hariton](https://github.com/aleksey-hariton)) <!-- 0.3.0 -->
 <!-- release_rollup -->
 
 <!-- latest_stable_release -->
