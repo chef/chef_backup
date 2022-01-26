@@ -1,6 +1,7 @@
 require "fileutils" unless defined?(FileUtils)
 require "pathname" unless defined?(Pathname)
 require "forwardable" unless defined?(Forwardable)
+require "chef-utils/dist" unless defined?(ChefUtils::Dist)
 require "chef_backup/deep_merge"
 
 # rubocop:disable IndentationWidth
@@ -93,7 +94,7 @@ class TarRestore
   end
 
   def touch_sentinel
-    dir = "/var/opt/opscode"
+    dir = "/var/opt/#{ChefUtils::Dist::Org::LEGACY_CONF_DIR}"
     sentinel = File.join(dir, "bootstrapped")
     FileUtils.mkdir_p(dir) unless File.directory?(dir)
     File.open(sentinel, "w") { |file| file.write "bootstrapped!" }
@@ -135,11 +136,11 @@ class TarRestore
 
   def fix_ha_plugins
     log "Fixing HA plugins directory (https://github.com/chef/chef-server/issues/115)"
-    plugins_dir = "/var/opt/opscode/plugins"
+    plugins_dir = "/var/opt/#{ChefUtils::Dist::Org::LEGACY_CONF_DIR}/plugins"
     drbd_plugin = File.join(plugins_dir, "chef-ha-drbd.rb")
 
     FileUtils.mkdir_p(plugins_dir) unless Dir.exist?(plugins_dir)
-    FileUtils.ln_sf("/opt/opscode/chef-server-plugin.rb", drbd_plugin) unless
+    FileUtils.ln_sf("/opt/#{ChefUtils::Dist::Org::LEGACY_CONF_DIR}/chef-server-plugin.rb", drbd_plugin) unless
       File.exist?(drbd_plugin)
   end
 
@@ -158,8 +159,8 @@ class TarRestore
 
   def touch_drbd_ready
     log "Touching drbd_ready file"
-    FileUtils.touch("/var/opt/opscode/drbd/drbd_ready") unless
-      File.exist?("/var/opt/opscode/drbd/drbd_ready")
+    FileUtils.touch("/var/opt/#{ChefUtils::Dist::Org::LEGACY_CONF_DIR}/drbd/drbd_ready") unless
+      File.exist?("/var/opt/#{ChefUtils::Dist::Org::LEGACY_CONF_DIR}/drbd/drbd_ready")
   end
 
   def reconfigure_server

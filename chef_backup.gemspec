@@ -18,4 +18,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency "mixlib-shellout", ">= 2.0", "< 4.0"
   spec.add_dependency "pastel"
   spec.add_dependency "tty-prompt", "~> 0.21"
+  spec.add_dependency "chef-utils", ">= 16.5.54" # for ChefUtils::Dist constants
 end
