@@ -1,6 +1,7 @@
 require "fileutils" unless defined?(FileUtils)
 require "json" unless defined?(JSON)
 require "forwardable" unless defined?(Forwardable)
+require "chef-utils/dist" unless defined?(ChefUtils::Dist)
 
 module ChefBackup
   # ChefBackup Global Config
@@ -12,10 +13,10 @@ module ChefBackup
       "backup" => {
         "always_dump_db" => true,
         "strategy" => "none",
-        "export_dir" => "/var/opt/chef-backup",
-        "project_name" => "opscode",
-        "ctl-command" => "chef-server-ctl",
-        "running_filepath" => "/etc/opscode/chef-server-running.json",
+        "export_dir" => "/var/opt/#{ChefUtils::Dist::Infra::SHORT}-backup",
+        "project_name" => ChefUtils::Dist::Org::LEGACY_CONF_DIR,
+        "ctl-command" => ChefUtils::Dist::Server::SERVER_CTL,
+        "running_filepath" => "/etc/#{ChefUtils::Dist::Org::LEGACY_CONF_DIR}/#{ChefUtils::Dist::Server::SERVER}-running.json",
         "database_name" => "opscode_chef",
       },
     }.freeze

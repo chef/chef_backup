@@ -3,6 +3,7 @@ require 'json'
 require 'mixlib/shellout'
 require 'chef_backup/config'
 require 'chef_backup/logger'
+require 'chef-utils/dist'
 
 # rubocop:disable ModuleLength
 # rubocop:disable IndentationWidth
@@ -29,7 +30,7 @@ module Helpers
       'ctl_command' => 'opscode-analytics-ctl'
     },
     'chef-ha' => {
-      'config_file' => '/etc/opscode/chef-server.rb'
+      'config_file' => "/etc/#{ChefUtils::Dist::Org::LEGACY_CONF_DIR}/#{ChefUtils::Dist::Server::SERVER}.rb"
     },
     'chef-sync' => {
       'config_file' => '/etc/chef-sync/chef-sync.rb',
