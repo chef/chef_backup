@@ -3,7 +3,7 @@ require 'json'
 require 'mixlib/shellout'
 require 'chef_backup/config'
 require 'chef_backup/logger'
-require 'chef-utils/dist'
+require 'chef-utils/dist' unless defined?(ChefUtils::Dist)
 
 # rubocop:disable ModuleLength
 # rubocop:disable IndentationWidth
@@ -169,14 +169,14 @@ module Helpers
   end
 
   def stop_chef_server(params = {})
-    log "Bringing down the #{Chef::Dist::SERVER_PRODUCT}"
+    log "Bringing down the #{ChefUtils::Dist::Server::PRODUCT}"
     services = enabled_services
     services -= params[:except].map(&:to_s) if params.key?(:except)
     services.each { |sv| stop_service(sv) }
   end
 
   def start_chef_server
-    log "Bringing up the #{Chef::Dist::SERVER_PRODUCT}"
+    log "Bringing up the #{ChefUtils::Dist::Server::PRODUCT}"
     enabled_services.each { |sv| start_service(sv) }
   end
 
@@ -253,7 +253,7 @@ module Helpers
         FileUtils.mkdir_p(dir) unless File.directory?(dir)
         dir
       else
-        Dir.mktmpdir("#{ChefConfig::Dist::SHORT}_backup")
+        Dir.mktmpdir("#{ChefUtils::Dist::Infra::SHORT}_backup")
       end
     end
   end
