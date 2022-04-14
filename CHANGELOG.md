@@ -1,9 +1,17 @@
 # chef_backup change log
 
-<!-- latest_release -->
+<!-- latest_release 0.3.1 -->
+## [v0.3.1](https://github.com/chef/chef_backup/tree/v0.3.1) (2022-04-14)
+
+#### Merged Pull Requests
+- Wordmark Fixes [#43](https://github.com/chef/chef_backup/pull/43) ([ramereth](https://github.com/ramereth))
 <!-- latest_release -->
 
-<!-- release_rollup -->
+<!-- release_rollup since=0.3.0 -->
+### Changes not yet released to rubygems.org
+
+#### Merged Pull Requests
+- Wordmark Fixes [#43](https://github.com/chef/chef_backup/pull/43) ([ramereth](https://github.com/ramereth)) <!-- 0.3.1 -->
 <!-- release_rollup -->
 
 <!-- latest_stable_release -->
