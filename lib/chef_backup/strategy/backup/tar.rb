@@ -1,6 +1,7 @@
 require 'fileutils'
 require 'json'
 require 'time'
+require "chef-utils/dist" unless defined?(ChefUtils::Dist)
 
 # rubocop:disable IndentationWidth
 module ChefBackup
@@ -30,9 +31,9 @@ class TarBackup
           service_config['backup']['export_dir']
         else
           msg = ["backup['export_dir'] has not been set.",
-                 'defaulting to: /var/opt/chef-backups'].join(' ')
+                 "defaulting to: /var/opt/#{ChefUtils::Dist::Infra::SHORT}-backups"].join(' ')
           log(msg, :warn)
-          '/var/opt/chef-backups'
+          "/var/opt/#{ChefUtils::Dist::Infra::SHORT}-backups"
         end
       FileUtils.mkdir_p(dir) unless File.directory?(dir)
       dir
@@ -51,7 +52,7 @@ class TarBackup
       return false
     end
     pg_user = service_config['postgresql']['username']
-    sql_file = "#{tmp_dir}/chef_backup-#{backup_time}.sql"
+    sql_file = "#{tmp_dir}/#{ChefUtils::Dist::Infra::SHORT}_backup-#{backup_time}.sql"
     cmd = [chpst,
            "-u #{pg_user}",
            pg_dumpall,
@@ -159,7 +160,7 @@ class TarBackup
   end
 
   def backup
-    log "Starting Chef Server backup #{config_only? ? '(config only)' : ''}"
+    log "Starting #{ChefUtils::Dist::Server::PRODUCT} backup #{config_only? ? '(config only)' : ''}"
     populate_data_map
     stopped = false
     if backend? && !config_only?
@@ -214,7 +215,7 @@ class TarBackup
               else
                 ''
               end
-    "chef-backup#{postfix}-#{backup_time}.tgz"
+    "#{ChefUtils::Dist::Infra::SHORT}-backup#{postfix}-#{backup_time}.tgz"
   end
 
   def service_enabled?(service)
@@ -239,7 +240,7 @@ class TarBackup
   end
 
   def ask_to_go_offline
-    msg = 'WARNING:  Offline backup mode must stop your Chef server before '
+    msg = "WARNING:  Offline backup mode must stop your #{ChefUtils::Dist::Server::PRODUCT} before "
     msg << 'continuing.  You can skip this message by passing a "--yes" '
     msg << 'argument. Do you wish to proceed? (y/N):'
 
