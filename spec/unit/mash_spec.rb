@@ -1,6 +1,6 @@
 #
 # Author:: Matthew Kent (<mkent@magoazul.com>)
-# Copyright:: Copyright 2011-2016, Chef Software Inc.
+# Copyright:: Copyright (c) 2014-2022 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
 # License:: Apache License, Version 2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
