@@ -60,9 +60,15 @@ class TarRestore
   end
 
   def restore_db_dump?
-    manifest["services"]["postgresql"]["pg_dump_success"] && !frontend?
+    should_restore_pg_dump? && manifest["services"]["postgresql"]["pg_dump_success"] && !frontend?
   rescue NoMethodError
     false
+  end
+
+  def should_restore_pg_dump?
+    # Check if the restore_pg_dump flag is set in the config
+    # Default is false if not specified
+    config["restore_pg_dump"] == true
   end
 
   def import_db
@@ -82,7 +88,16 @@ class TarRestore
   end
 
   def restore_services
-    manifest.key?("services") && manifest["services"].keys.each do |service|
+    return unless manifest.key?("services")
+    
+    manifest["services"].keys.each do |service|
+      # Skip postgresql service restoration if we plan to import SQL dump
+      # to prevent duplicate data restoration
+      if service == "postgresql" && restore_db_dump?
+        log "Skipping postgresql service restoration - will use SQL dump import instead"
+        next
+      end
+      
       restore_data(:services, service)
     end
   end
