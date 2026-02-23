@@ -88,16 +88,7 @@ class TarRestore
   end
 
   def restore_services
-    return unless manifest.key?("services")
-    
-    manifest["services"].keys.each do |service|
-      # Skip postgresql service restoration if we plan to import SQL dump
-      # to prevent duplicate data restoration
-      if service == "postgresql" && restore_db_dump?
-        log "Skipping postgresql service restoration - will use SQL dump import instead"
-        next
-      end
-      
+    manifest.key?("services") && manifest["services"].keys.each do |service|
       restore_data(:services, service)
     end
   end
