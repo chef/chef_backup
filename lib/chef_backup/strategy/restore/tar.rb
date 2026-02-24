@@ -66,9 +66,9 @@ class TarRestore
   end
 
   def should_restore_pg_dump?
-    # Check if the restore_pg_dump flag is set in the config
+    # Check if the skip_pg_dump flag is set in the config
     # Default is false if not specified
-    config["restore_pg_dump"] == true
+    config["skip_pg_dump"] != true
   end
 
   def import_db
