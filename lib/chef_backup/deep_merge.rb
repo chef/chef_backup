@@ -1,7 +1,7 @@
 #
 # Author:: Adam Jacob (<adam@chef.io>)
 # Author:: Steve Midgley (http://www.misuse.org/science)
-# Copyright:: Copyright 2009-2016, Chef Software Inc.
+# Copyright:: Copyright (c) 2014-2022 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
 # Copyright:: Copyright 2008-2016, Steve Midgley
 # License:: Apache License, Version 2.0
 #
