@@ -60,9 +60,15 @@ class TarRestore
   end
 
   def restore_db_dump?
-    manifest["services"]["postgresql"]["pg_dump_success"] && !frontend?
+    should_restore_pg_dump? && manifest["services"]["postgresql"]["pg_dump_success"] && !frontend?
   rescue NoMethodError
     false
+  end
+
+  def should_restore_pg_dump?
+    # Check if the skip_pg_dump flag is set in the config
+    # Default is false if not specified
+    config["skip_pg_dump"] != true
   end
 
   def import_db
